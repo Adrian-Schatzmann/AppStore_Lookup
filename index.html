@@ -28,18 +28,74 @@
         </select>
 
         <!-- Platform -->
-        <label class="form-label mt-3" for="platform">Platform</label>
-        <div class="btn-group mb-3" role="group" aria-label="Platform">
-          <button type="button" class="btn btn-primary active" id="platformIOS">
-            iOS
-          </button>
+        <label class="form-label mt-3">Platform</label>
+        <div class="dropdown">
           <button
+            class="btn btn-outline-primary w-100 text-start dropdown-toggle"
             type="button"
-            class="btn btn-outline-primary"
-            id="platformMac"
+            id="platformDropdown"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
           >
-            Mac
+            Select Platforms
           </button>
+          <ul
+            class="dropdown-menu w-100 p-2"
+            aria-labelledby="platformDropdown"
+          >
+            <li>
+              <div class="form-check">
+                <input
+                  class="form-check-input platform-checkbox"
+                  type="checkbox"
+                  value="ios"
+                  id="platformIOS"
+                  checked
+                />
+                <label class="form-check-label" for="platformIOS">iOS</label>
+              </div>
+            </li>
+            <li>
+              <div class="form-check">
+                <input
+                  class="form-check-input platform-checkbox"
+                  type="checkbox"
+                  value="ipados"
+                  id="platformiPad"
+                  checked
+                />
+                <label class="form-check-label" for="platformiPad"
+                  >iPadOS</label
+                >
+              </div>
+            </li>
+            <li>
+              <div class="form-check">
+                <input
+                  class="form-check-input platform-checkbox"
+                  type="checkbox"
+                  value="macos"
+                  id="platformMac"
+                  checked
+                />
+                <label class="form-check-label" for="platformMac">macOS</label>
+              </div>
+            </li>
+            <li>
+              <div class="form-check">
+                <input
+                  class="form-check-input platform-checkbox"
+                  type="checkbox"
+                  value="universal"
+                  id="platformUniversal"
+                  checked
+                />
+                <label class="form-check-label" for="platformUniversal"
+                  >Universal</label
+                >
+              </div>
+            </li>
+          </ul>
         </div>
 
         <!-- Lookup Input with Dropdown -->

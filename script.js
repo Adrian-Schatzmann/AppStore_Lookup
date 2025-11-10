@@ -230,7 +230,7 @@ const TEXT = {
               <div class="small text-muted">${escapeHtml(app.bundleId)}</div>
             </div>
           </div>
-          <div>
+          <div class="d-flex flex-column flex-sm-row gap-1">
             <button class="btn btn-sm btn-primary load-history" data-bundle="${encodeURIComponent(app.bundleId)}">Load</button>
             <button class="btn btn-sm btn-outline-danger ms-1 remove-history" data-bundle="${encodeURIComponent(app.bundleId)}">Remove</button>
           </div>
@@ -254,7 +254,7 @@ const TEXT = {
               <div class="small text-muted">${escapeHtml(app.bundleId)}</div>
             </div>
           </div>
-          <div>
+          <div class="d-flex flex-column flex-sm-row gap-1">
             <button class="btn btn-sm btn-primary load-fav" data-bundle="${encodeURIComponent(app.bundleId)}">Load</button>
             <button class="btn btn-sm btn-outline-danger ms-1 remove-fav" data-bundle="${encodeURIComponent(app.bundleId)}">Remove</button>
           </div>

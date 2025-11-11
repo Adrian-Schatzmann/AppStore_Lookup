@@ -16,25 +16,41 @@ const TEXT = {
   noFavorites: "No favorites",
   saveFav: "Save to Favorites",
   openStore: "Open in App Store",
-  pleaseEnter: "Please enter a value."
+  pleaseEnter: "Please enter a value.",
+  developerLabel: "Developer",
+  placeholderDeveloper: "Developer Name",
+  noDeveloperResults: "No developers found matching your query.",
+  selectedPlatformsLabel: "Selected Platform:"
 };
 
   // ---------- DOM References ----------
   const suggestionBox = $("#suggestions");
   const lookupValue = $("#lookupValue");
+  const developerInput = $("#developerInput");
+  const developerSuggestionBox = $("#developerSuggestions");
+  const selectedPlatformsDisplay = $('<div id="selectedPlatforms" class="mt-2 small text-muted"></div>');
+
   const HISTORY_KEY = "lookupHistory_v2";
   const FAVORITES_KEY = "lookupFavorites_v2";
   const MAX_ITEMS = 20;
   let currentPlatform = "ios";
+  let selectedDeveloper = "";
 
   // ---------- Initialize ----------
   initAll();
 
   function initAll() {
-    $("#lookupLabel").text(Text.appNameLabel);
-    lookupValue.attr("placeholder", Text.placeholderName);
-    $("#lookupButton").text(Text.searchButton);
-    $("#clearButton").text(Text.clearButton);
+    $("#lookupLabel").text(TEXT.appNameLabel);
+    lookupValue.attr("placeholder", TEXT.placeholderName);
+    $("#lookupButton").text(TEXT.searchButton);
+    $("#clearButton").text(TEXT.clearButton);
+
+    // Place selectedPlatformsDisplay below the entire platform selection (outside dropdown)
+    // Find the platform button container and insert after it
+    var $platformContainer = $("#platformIOS").parent().parent();
+    $platformContainer.after(selectedPlatformsDisplay);
+
+    updateSelectedPlatformsDisplay();
 
     renderHistory();
     renderFavorites();
@@ -60,13 +76,23 @@ const TEXT = {
     currentPlatform = "ios";
     $(this).addClass("btn-primary active").removeClass("btn-outline-primary");
     $("#platformMac").addClass("btn-outline-primary").removeClass("btn-primary active");
+    updateSelectedPlatformsDisplay();
   });
 
   $("#platformMac").on("click", function() {
     currentPlatform = "mac";
     $(this).addClass("btn-primary active").removeClass("btn-outline-primary");
     $("#platformIOS").addClass("btn-outline-primary").removeClass("btn-primary active");
+    updateSelectedPlatformsDisplay();
   });
+
+  function updateSelectedPlatformsDisplay() {
+    let displayText = TEXT.selectedPlatformsLabel + " ";
+    if (currentPlatform === "ios") displayText += "iOS";
+    else if (currentPlatform === "mac") displayText += "Mac";
+    else displayText += currentPlatform;
+    selectedPlatformsDisplay.text(displayText);
+  }
 
   // ---------- Get Platform per App ----------
   function getPlatform(app) {
@@ -88,13 +114,19 @@ const TEXT = {
 
     const entity = currentPlatform === "mac" ? "macSoftware" : "software";
 
+    let dataParams = { term: query, entity: entity, limit: 8 };
+    if(selectedDeveloper) {
+      dataParams.attribute = "softwareDeveloper";
+      dataParams.term = selectedDeveloper;
+    }
+
     $.ajax({
       url: "https://itunes.apple.com/search",
       dataType: "jsonp",
-      data: { term: query, entity: entity, limit: 8 },
+      data: dataParams,
       success: function(data) {
         if (!data.results || !data.results.length) {
-          $("#result").html(`<div class="alert alert-warning">${Text.noResults}</div>`);
+          $("#result").html(`<div class="alert alert-warning">${TEXT.noResults}</div>`);
           return;
         }
         data.results.forEach(app => {
@@ -114,9 +146,51 @@ const TEXT = {
         suggestionBox.addClass("show");
       },
       error: function() {
-        $("#result").html(`<div class="alert alert-danger">${Text.apiError}</div>`);
+        $("#result").html(`<div class="alert alert-danger">${TEXT.apiError}</div>`);
       }
     });
+  });
+
+  // ---------- Developer Autocomplete ----------
+  developerInput.on("input", function () {
+    const query = $(this).val().trim();
+    developerSuggestionBox.empty();
+    if(query.length < 2) return;
+
+    $.ajax({
+      url: "https://itunes.apple.com/search",
+      dataType: "jsonp",
+      data: { term: query, attribute: "softwareDeveloper", entity: "software", limit: 8 },
+      success: function(data) {
+        if (!data.results || !data.results.length) {
+          developerSuggestionBox.append(`<div class="list-group-item disabled">${TEXT.noDeveloperResults}</div>`);
+          return;
+        }
+        // Extract unique developers from results
+        const seenDevelopers = new Set();
+        data.results.forEach(app => {
+          const devName = app.sellerName || "";
+          if(devName && !seenDevelopers.has(devName)) {
+            seenDevelopers.add(devName);
+            developerSuggestionBox.append(`
+              <button type="button" class="list-group-item list-group-item-action developer-suggestion-item">${escapeHtml(devName)}</button>
+            `);
+          }
+        });
+      },
+      error: function() {
+        // silently ignore developer lookup errors
+      }
+    });
+  });
+
+  // ---------- Click Developer Suggestion ----------
+  $(document).on("click", ".developer-suggestion-item", function () {
+    const devName = $(this).text();
+    selectedDeveloper = devName;
+    developerInput.val(devName);
+    developerSuggestionBox.empty();
+    clearSuggestions();
   });
 
   // ---------- Click Suggestion ----------
@@ -132,18 +206,23 @@ const TEXT = {
   $("#lookupButton").on("click", function () {
     const type = $("#lookupType").val();
     const value = lookupValue.val().trim();
-    if (!value) { $("#result").text(Text.pleaseEnter); return; }
+    if (!value) { $("#result").text(TEXT.pleaseEnter); return; }
 
     if (type === "id") lookupByBundle(value);
     else {
       const entity = currentPlatform === "mac" ? "macSoftware" : "software";
+      let dataParams = { term: value, entity: entity, limit: 1 };
+      if(selectedDeveloper) {
+        dataParams.attribute = "softwareDeveloper";
+        dataParams.term = selectedDeveloper;
+      }
       $.ajax({
         url: "https://itunes.apple.com/search",
         dataType: "jsonp",
-        data: { term: value, entity: entity, limit: 1 },
+        data: dataParams,
         success: function(data){
           if (!data.results || !data.results.length) {
-            $("#result").html(`<div class="alert alert-warning">${Text.noResults}</div>`);
+            $("#result").html(`<div class="alert alert-warning">${TEXT.noResults}</div>`);
             return;
           }
           const app = data.results[0];
@@ -151,7 +230,7 @@ const TEXT = {
           persistHistory(app);
         },
         error: function() {
-          $("#result").html(`<div class="alert alert-danger">${Text.apiError}</div>`);
+          $("#result").html(`<div class="alert alert-danger">${TEXT.apiError}</div>`);
         }
       });
     }
@@ -164,7 +243,7 @@ const TEXT = {
       data: { bundleId },
       success: function(data){
         if (!data.results || !data.results.length) {
-          $("#result").html(`<div class="alert alert-warning">${Text.noResults}</div>`);
+          $("#result").html(`<div class="alert alert-warning">${TEXT.noResults}</div>`);
           return;
         }
         const app = data.results[0];
@@ -172,7 +251,7 @@ const TEXT = {
         persistHistory(app);
       },
       error: function() {
-        $("#result").html(`<div class="alert alert-danger">${Text.apiError}</div>`);
+        $("#result").html(`<div class="alert alert-danger">${TEXT.apiError}</div>`);
       }
     });
   }
@@ -200,8 +279,8 @@ const TEXT = {
           <p class="mb-1"><strong>Platform:</strong> ${platform}</p>
           <p class="mb-1"><strong>Developer:</strong> ${developer}</p>
           <p class="mb-1"><strong>Description:</strong> ${description.substring(0,200)}${description.length>200?"…":""}</p>
-          <a href="${appStoreUrl}" class="btn btn-outline-primary btn-sm mt-2" target="_blank">${Text.openStore}</a>
-          <button class="btn btn-success btn-sm mt-2 save-fav" data-bundle="${bundle}" data-name="${name}" data-art="${escapeHtml(app.artworkUrl60||'')}">${Text.saveFav}</button>
+          <a href="${appStoreUrl}" class="btn btn-outline-primary btn-sm mt-2" target="_blank">${TEXT.openStore}</a>
+          <button class="btn btn-success btn-sm mt-2 save-fav" data-bundle="${bundle}" data-name="${name}" data-art="${escapeHtml(app.artworkUrl60||'')}">${TEXT.saveFav}</button>
         </div>
       </div>
     `);
@@ -219,7 +298,7 @@ const TEXT = {
     const list = loadList(HISTORY_KEY);
     const target = $("#historyList");
     target.empty();
-    if (!list.length) { target.append(`<div class="text-muted small">${Text.noEntries}</div>`); return; }
+    if (!list.length) { target.append(`<div class="text-muted small">${TEXT.noEntries}</div>`); return; }
     list.forEach(app=>{
       target.append(`
         <div class="d-flex justify-content-between align-items-center border-bottom py-2">
@@ -243,7 +322,7 @@ const TEXT = {
     const list = loadList(FAVORITES_KEY);
     const target = $("#favoritesList");
     target.empty();
-    if (!list.length) { target.append(`<div class="text-muted small">${Text.noFavorites}</div>`); return; }
+    if (!list.length) { target.append(`<div class="text-muted small">${TEXT.noFavorites}</div>`); return; }
     list.forEach(app=>{
       target.append(`
         <div class="d-flex justify-content-between align-items-center border-bottom py-2">
@@ -291,7 +370,17 @@ const TEXT = {
   });
 
   function clearSuggestions(){ suggestionBox.empty().removeClass("show"); }
-  $(document).on("click", function(e){ if(!$(e.target).closest("#lookupValue,#suggestions").length) clearSuggestions(); });
+  $(document).on("click", function(e){ 
+    if(!$(e.target).closest("#lookupValue,#suggestions").length) clearSuggestions();
+    if(!$(e.target).closest("#developerInput,#developerSuggestions").length) developerSuggestionBox.empty();
+  });
 
-  $("#clearButton").on("click", function(){ lookupValue.val(""); $("#result").text(Text.pleaseEnter); clearSuggestions(); });
+  $("#clearButton").on("click", function(){ 
+    lookupValue.val(""); 
+    developerInput.val("");
+    selectedDeveloper = "";
+    $("#result").text(TEXT.pleaseEnter); 
+    clearSuggestions(); 
+    developerSuggestionBox.empty();
+  });
 });

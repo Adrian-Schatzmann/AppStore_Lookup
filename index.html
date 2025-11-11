@@ -19,123 +19,152 @@
       <h1 class="mb-4">AppStore Lookup</h1>
 
       <!-- Lookup Card -->
-      <div class="card p-4 shadow-sm">
-        <!-- Lookup Type -->
-        <label for="lookupType" class="form-label">Search Mode</label>
-        <select id="lookupType" class="form-select">
-          <option value="name">App Name</option>
-          <option value="id">App Store ID</option>
-        </select>
+      <div class="card p-4 shadow-sm mb-4">
+        <form>
+          <!-- Lookup Type -->
+          <div class="mb-3">
+            <label for="lookupType" class="form-label">Search Mode</label>
+            <select id="lookupType" class="form-select">
+              <option value="name">App Name</option>
+              <option value="id">App Store ID</option>
+            </select>
+          </div>
 
-        <!-- Platform -->
-        <label class="form-label mt-3">Platform</label>
-        <div class="dropdown">
-          <button
-            class="btn btn-outline-primary w-100 text-start dropdown-toggle"
-            type="button"
-            id="platformDropdown"
-            data-bs-toggle="dropdown"
-            aria-expanded="false"
-          >
-            Select Platforms
-          </button>
-          <ul
-            class="dropdown-menu w-100 p-2"
-            aria-labelledby="platformDropdown"
-          >
-            <li>
-              <div class="form-check">
-                <input
-                  class="form-check-input platform-checkbox"
-                  type="checkbox"
-                  value="ios"
-                  id="platformIOS"
-                  checked
-                />
-                <label class="form-check-label" for="platformIOS">iOS</label>
-              </div>
-            </li>
-            <li>
-              <div class="form-check">
-                <input
-                  class="form-check-input platform-checkbox"
-                  type="checkbox"
-                  value="ipados"
-                  id="platformiPad"
-                  checked
-                />
-                <label class="form-check-label" for="platformiPad"
-                  >iPadOS</label
-                >
-              </div>
-            </li>
-            <li>
-              <div class="form-check">
-                <input
-                  class="form-check-input platform-checkbox"
-                  type="checkbox"
-                  value="macos"
-                  id="platformMac"
-                  checked
-                />
-                <label class="form-check-label" for="platformMac">macOS</label>
-              </div>
-            </li>
-            <li>
-              <div class="form-check">
-                <input
-                  class="form-check-input platform-checkbox"
-                  type="checkbox"
-                  value="universal"
-                  id="platformUniversal"
-                  checked
-                />
-                <label class="form-check-label" for="platformUniversal"
-                  >Universal</label
-                >
-              </div>
-            </li>
-          </ul>
-        </div>
+          <!-- Platform -->
+          <div class="mb-3">
+            <label class="form-label d-block">Platform</label>
+            <div class="dropdown">
+              <button
+                class="btn btn-outline-primary w-100 text-start dropdown-toggle"
+                type="button"
+                id="platformDropdown"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                Select Platforms
+              </button>
+              <span id="selectedPlatforms" class="ms-2 small text-muted"></span>
+              <ul
+                class="dropdown-menu p-3"
+                aria-labelledby="platformDropdown"
+                style="min-width: 12rem"
+              >
+                <li><h6 class="dropdown-header mb-2">Platforms</h6></li>
+                <li>
+                  <div class="form-check">
+                    <input
+                      class="form-check-input platform-checkbox"
+                      type="checkbox"
+                      value="ios"
+                      id="platformIOS"
+                      checked
+                    />
+                    <label class="form-check-label" for="platformIOS"
+                      >iOS</label
+                    >
+                  </div>
+                </li>
+                <li>
+                  <div class="form-check">
+                    <input
+                      class="form-check-input platform-checkbox"
+                      type="checkbox"
+                      value="ipados"
+                      id="platformiPad"
+                      checked
+                    />
+                    <label class="form-check-label" for="platformiPad"
+                      >iPadOS</label
+                    >
+                  </div>
+                </li>
+                <li>
+                  <div class="form-check">
+                    <input
+                      class="form-check-input platform-checkbox"
+                      type="checkbox"
+                      value="macos"
+                      id="platformMac"
+                      checked
+                    />
+                    <label class="form-check-label" for="platformMac"
+                      >macOS</label
+                    >
+                  </div>
+                </li>
+                <li>
+                  <div class="form-check">
+                    <input
+                      class="form-check-input platform-checkbox"
+                      type="checkbox"
+                      value="universal"
+                      id="platformUniversal"
+                      checked
+                    />
+                    <label class="form-check-label" for="platformUniversal"
+                      >Universal</label
+                    >
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
 
-        <!-- Lookup Input with Dropdown -->
-        <div class="position-relative mt-3">
-          <input
-            type="text"
-            id="lookupValue"
-            class="form-control"
-            autocomplete="off"
-            placeholder="Enter App Name or ID"
-            data-bs-toggle="dropdown"
-          />
-          <div id="suggestions" class="dropdown-menu w-100"></div>
-        </div>
+          <!-- Developer Input -->
+          <div class="mb-3 position-relative">
+            <input
+              type="text"
+              id="developerInput"
+              class="form-control"
+              autocomplete="off"
+              placeholder="Type developer name"
+              data-bs-toggle="dropdown"
+            />
+            <div id="developerSuggestions" class="dropdown-menu w-100"></div>
+          </div>
 
-        <!-- Action Buttons -->
-        <div class="mt-3">
-          <button id="lookupButton" class="btn btn-primary me-2">Search</button>
-          <button id="clearButton" class="btn btn-outline-secondary">
-            Clear
-          </button>
-        </div>
+          <!-- Lookup Input with Dropdown -->
+          <div class="mb-3 position-relative">
+            <input
+              type="text"
+              id="lookupValue"
+              class="form-control"
+              autocomplete="off"
+              placeholder="Enter App Name or ID"
+              data-bs-toggle="dropdown"
+            />
+            <div id="suggestions" class="dropdown-menu w-100"></div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="d-flex gap-2">
+            <button id="lookupButton" class="btn btn-primary flex-grow-1">
+              Search
+            </button>
+            <button
+              id="clearButton"
+              class="btn btn-outline-secondary flex-grow-1"
+            >
+              Clear
+            </button>
+          </div>
+        </form>
       </div>
 
       <!-- History -->
-      <div class="card mt-4 p-3 shadow-sm">
-        <h5 class="mb-2">History</h5>
-        <div id="historyList"></div>
+      <div class="card p-3 shadow-sm mb-3">
+        <h5 class="mb-3">History</h5>
+        <div id="historyList" class="list-group"></div>
       </div>
 
       <!-- Favorites -->
-      <div class="card mt-3 p-3 shadow-sm">
-        <h5 class="mb-2">Favorites</h5>
-        <div id="favoritesList"></div>
+      <div class="card p-3 shadow-sm mb-3">
+        <h5 class="mb-3">Favorites</h5>
+        <div id="favoritesList" class="list-group"></div>
       </div>
 
       <!-- Result -->
-      <div id="result" class="card mt-4 p-4 shadow-sm">
-        No search executed yet.
-      </div>
+      <div id="result" class="card p-4 shadow-sm">No search executed yet.</div>
     </div>
 
     <!-- JS -->

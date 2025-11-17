@@ -1,7 +1,4 @@
 $(function () {
-  // ---------- Localization ----------
-  const userLang = navigator.language || navigator.userLanguage;
-  const isGerman = userLang.startsWith("de");
 
 const TEXT = {
   appNameLabel: "App Name",

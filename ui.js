@@ -7,6 +7,8 @@ const platformCheckboxes = document.querySelectorAll(
 );
 const platformButton = document.getElementById("platformSelectButton");
 const keepOpenMenus = document.querySelectorAll(".dropdown-menu.keep-open");
+const lookupTypeSelect = document.getElementById("lookupType");
+const developerInput = document.getElementById("developerInput");
 
 //------------------------
 //Funktionen
@@ -61,4 +63,24 @@ updatePlatformButtonText();
 platformCheckboxes.forEach(function (menu) {
   //Abstand hinzufügen, weil wir hier keine eigenes CSS andwenden dürfen...
   menu.style.marginLeft = "10px";
+});
+
+//Event-Listener für das "Search Mode"-Dropdown
+lookupTypeSelect.addEventListener("change", function () {
+  if (this.value === "id") {
+    //Dieser Block wird ausgeführt, wenn "App Store ID" ausgewählt wird.
+    //Inputs zurücksetzen und deaktivieren
+    platformButton.disabled = true;
+    developerInput.value = "";
+    platformCheckboxes.forEach(function (checkbox) {
+      checkbox.checked = keepOpenMenus.checked;
+    });
+    updatePlatformButtonText();
+    developerInput.disabled = true;
+  } else {
+    // Dieser Block wird ausgeführt, wenn "App Name" ausgewählt wird.
+    //Inputs aktivieren
+    platformButton.disabled = false;
+    developerInput.disabled = false;
+  }
 });

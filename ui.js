@@ -2,9 +2,7 @@
 //DOM Referenzen
 //------------------------
 //Findet alle Dropdown-Menüs mit der Klasse 'keep-open'
-const platformCheckboxes = document.querySelectorAll(
-  ".platform-dropdown .form-check-input"
-);
+const platformCheckboxes = document.querySelectorAll(".platform-dropdown .form-check-input");
 const platformButton = document.getElementById("platformSelectButton");
 const keepOpenMenus = document.querySelectorAll(".dropdown-menu.keep-open");
 const lookupTypeSelect = document.getElementById("lookupType");
@@ -72,9 +70,9 @@ lookupTypeSelect.addEventListener("change", function () {
     //Inputs zurücksetzen und deaktivieren
     platformButton.disabled = true;
     developerInput.value = "";
-    platformCheckboxes.forEach(function (checkbox) {
-      checkbox.checked = keepOpenMenus.checked;
-    });
+//    platformCheckboxes.forEach(function (checkbox) {
+//     checkbox.checked = keepOpenMenus.checked;
+//    });
     updatePlatformButtonText();
     developerInput.disabled = true;
   } else {

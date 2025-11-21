@@ -109,3 +109,8 @@ lookupButton.addEventListener("click", function (e) {
 //apiHandler.appIdLookup("909253");
 //apiHandler.softwareSearch("spotify");
 //apiHandler.developerSearch("Microsoft");
+
+
+
+
+

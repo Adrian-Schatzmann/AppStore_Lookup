@@ -4,11 +4,16 @@
  */
 export function appIdLookup(appID) {
   const url = "https://itunes.apple.com/lookup"; //API URL
+  const country = "CH"; //Schweizer AppStore        //funktioniert noch nicht! das hier geht: https://itunes.apple.com/lookup?id=1542025935&country=CH
 
   $.ajax({
     url: url,
     dataType: "jsonp", //JSONP statt XHR weil XHR ein CORS-Problem verursacht bei der iTunes API
-    data: { id: appID }, //Parameter mitgeben
+    data: {
+      //Parameter mitgeben
+      id: appID,
+      country: country,
+    },
     success: function (data) {
       console.log("Results:", data.results); //Daten zurückgeben
     },

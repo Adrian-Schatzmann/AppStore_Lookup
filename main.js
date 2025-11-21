@@ -3,9 +3,11 @@
 //------------------------
 import * as ui from "./ui.js";
 import * as apiHandler from "./apiHandler.js";
+
 //------------------------
 //DOM Referenzen
 //------------------------
+const lookupButton = document.getElementById("lookupButton");
 
 //------------------------
 //Resultatfilter
@@ -52,13 +54,58 @@ function getPlatform(app) {
   if (hasIphone && !hasIpad) return "iOS";
 
   // Fallback
-  console.error("Softwareplattform konnte nicht identifiziert werden! Details: ", app);
+  console.error(
+    "Softwareplattform konnte nicht identifiziert werden! Details: ",
+    app
+  );
   return "unknown";
 }
+
+function filterDeveloper(data) {
+  const selectedDeveloper = document.getElementById("developerInput").value; //Gewählten Entwickler holen
+
+  //Funktion überspringen wenn kein Entwickler angegeben wurde. Weigergeben an nächsten Filterschritt
+  if (!selectedDeveloper) {
+    filterPlatform(result); //TODO fix
+  }
+
+  for (const app of data.results) {
+    if (app.sellerName === selectedDeveloper) {
+      console.log("Treffer:", app.trackName, app.sellerName);
+    }
+  }
+}
+
+function filterPlatform(result) {
+//todo implement
+
+}
+
 
 //------------------------
 //Main-Ablauf
 //------------------------
-apiHandler.appIdLookup("909253");
+
+lookupButton.addEventListener("click", function (e) {
+  e.preventDefault(); //verhindet das Neuladen der Seite beim Absenden vom Formular
+  let data = ""; //Variable für Resultate der API Abfragen
+
+  const selectedSearchMode = document.getElementById("lookupType").value; //Aktuell gewählten Modus holen
+  const input = document.getElementById("lookupValue").value; //Suchbegriff vom User holen
+
+  if (selectedSearchMode === "name") {
+    //Suche nach String
+    data = apiHandler.softwareSearch(input);
+    filterDeveloper(data);
+  } else if (selectedSearchMode === "id") {
+    //Suche nach ID
+    data = apiHandler.appIdLookup(input);
+    console.log(data);
+  } else {
+    console.error("Unbekannte Suchmodus Auswahl");
+  }
+});
+
+//apiHandler.appIdLookup("909253");
 //apiHandler.softwareSearch("spotify");
-apiHandler.developerSearch("Microsoft");
+//apiHandler.developerSearch("Microsoft");

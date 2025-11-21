@@ -42,6 +42,7 @@ export function softwareSearch(term) {
     },
     success: function (data) {
       console.log("Results:", data.results);
+      callback(data.results);
     },
     error: function () {
       console.error("Network/API error");

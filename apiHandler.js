@@ -3,24 +3,29 @@
  * @param {*} appID App ID der gesuchten App
  */
 export function appIdLookup(appID) {
-  const url = "https://itunes.apple.com/lookup"; //API URL
-  const country = "CH"; //Schweizer AppStore        //funktioniert noch nicht! das hier geht: https://itunes.apple.com/lookup?id=1542025935&country=CH
+  return new Promise((resolve, reject) => {
+    //Rückgabe der Daten oder eines Fehlers vorbereiten
+    const url = "https://itunes.apple.com/lookup"; //API URL
+    const country = "CH"; //Schweizer AppStore        //funktioniert noch nicht! das hier geht: https://itunes.apple.com/lookup?id=1542025935&country=CH
 
-  $.ajax({
-    url: url,
-    dataType: "jsonp", //JSONP statt XHR weil XHR ein CORS-Problem verursacht bei der iTunes API
-    data: {
-      //Parameter mitgeben
-      id: appID,
-      country: country,
-    },
-    success: function (data) {
-      console.log("Results:", data.results); //Daten zurückgeben
-    },
-    error: function () {
-      //Error handling
-      console.error("Network/API error");
-    },
+    $.ajax({
+      //Startet per jQuery eine neue Ajax Abfrage
+      url: url,
+      dataType: "jsonp", //JSONP statt XHR weil XHR ein CORS-Problem verursacht bei der iTunes API
+      cache: true, //Verhindert den "&_=timestamp" Parameter. Dieser macht Probleme beim Anwenden der eigenen Parameter.
+      data: {
+        //Parameter mitgeben
+        id: appID,
+        country: country,
+      },
+      success: function (data) {
+        resolve(data); //Bei Erfolg Daten zurückgeben
+      },
+      error: function () {
+        //Error handling
+        reject(new Error("Fehler: Timeout oder ungültige Anfrage."));
+      },
+    });
   });
 }
 
@@ -29,29 +34,33 @@ export function appIdLookup(appID) {
  * @param {*} term Suchbegriff für die Software
  */
 export function softwareSearch(term) {
-  const media = "software";
-  const country = "CH"; //Schweizer AppStore
-  const entity = "software"; //softwareinfos erhalten, keine Filme, Musik etc.
-  const maxResults = 50;
+  return new Promise((resolve, reject) => {
+    //Rückgabe der Daten oder eines Fehlers vorbereiten
+    const media = "software";
+    const country = "CH"; //Schweizer AppStore
+    const entity = "software"; //softwareinfos erhalten, keine Filme, Musik etc.
+    const maxResults = 50;
 
-  $.ajax({
-    url: "https://itunes.apple.com/search",
-    dataType: "jsonp", //JSONP statt XHR weil XHR ein CORS-Problem verursacht bei der iTunes API
-    data: {
-      //Parameter mitgeben
-      term: term,
-      country: country,
-      media: media,
-      entity: entity,
-      limit: maxResults,
-    },
-    success: function (data) {
-      console.log("Results:", data.results);
-      callback(data.results);
-    },
-    error: function () {
-      console.error("Network/API error");
-    },
+    $.ajax({
+      url: "https://itunes.apple.com/search",
+      dataType: "jsonp", //JSONP statt XHR weil XHR ein CORS-Problem verursacht bei der iTunes API
+      cache: true, //Verhindert den "&_=timestamp" Parameter. Dieser macht Probleme beim Anwenden der eigenen Parameter.
+      data: {
+        //Parameter mitgeben
+        term: term,
+        country: country,
+        media: media,
+        entity: entity,
+        limit: maxResults,
+      },
+      success: function (data) {
+        resolve(data); //Bei Erfolg Daten zurückgeben
+      },
+      error: function () {
+        //Error handling
+        reject(new Error("Fehler: Timeout oder ungültige Anfrage."));
+      },
+    });
   });
 }
 
@@ -60,30 +69,30 @@ export function softwareSearch(term) {
  * @param {*} term Suchbegriff für den Entwickler (sollte so genau wie möglich dem Entwicklernamen entsprechen)
  */
 export function developerSearch(term) {
-  const media = "software";
-  const entity = "software"; //softwareinfos erhalten, keine Filme, Musik etc.
-  const maxResults = 20;
+  return new Promise((resolve, reject) => {
+    const media = "software";
+    const entity = "software"; //softwareinfos erhalten, keine Filme, Musik etc.
+    const maxResults = 20;
 
-  $.ajax({
-    url: "https://itunes.apple.com/search",
-    dataType: "jsonp", //JSONP statt XHR weil XHR ein CORS-Problem verursacht bei der iTunes API
-    data: {
-      //Parameter mitgeben
-      term: term,
-      media: media,
-      entity: entity,
-      attribute: "softwareDeveloper",
-      limit: maxResults,
-    },
-    success: function (data) {
-      //Erstellt ein Array mit eindeutigen Entwicklernamen aus den Ergebnissen
-      const developers = [
-        ...new Set(data.results.map((app) => app.sellerName)),
-      ];
-      console.log("Results:", developers);
-    },
-    error: function () {
-      console.error("Network/API error");
-    },
+    $.ajax({
+      url: "https://itunes.apple.com/search",
+      dataType: "jsonp", //JSONP statt XHR weil XHR ein CORS-Problem verursacht bei der iTunes API
+      cache: true, //Verhindert den "&_=timestamp" Parameter. Dieser macht Probleme beim Anwenden der eigenen Parameter.
+      data: {
+        //Parameter mitgeben
+        term: term,
+        media: media,
+        entity: entity,
+        attribute: "softwareDeveloper",
+        limit: maxResults,
+      },
+      success: function (data) {
+        resolve(data); //Bei Erfolg Daten zurückgeben
+      },
+      error: function () {
+        //Error handling
+        reject(new Error("Fehler: Timeout oder ungültige Anfrage."));
+      },
+    });
   });
 }

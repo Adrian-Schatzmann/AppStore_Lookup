@@ -61,6 +61,10 @@ function getPlatform(app) {
   return "unknown";
 }
 
+/**
+ * Filtert das Resultat nach dem angegebenen Entwickler
+ * @param {*} data data Objekt aus einer ajax Abfrage
+ */
 function filterDeveloper(data) {
   const selectedDeveloper = document.getElementById("developerInput").value; //Gewählten Entwickler holen
 
@@ -76,32 +80,48 @@ function filterDeveloper(data) {
   }
 }
 
-function filterPlatform(result) {
-//todo implement
-
+function filterPlatform(data) {
+  //todo
+  //use getPlatform()
 }
 
+function filterPlatform(result) {
+  //todo implement
+}
 
 //------------------------
 //Main-Ablauf
 //------------------------
-
-lookupButton.addEventListener("click", function (e) {
+/**
+ * Erkennt das Auslösen einer Suche und startet die entsprechenden Funktionen
+ */
+lookupButton.addEventListener("click", async function (e) {
   e.preventDefault(); //verhindet das Neuladen der Seite beim Absenden vom Formular
-  let data = ""; //Variable für Resultate der API Abfragen
 
   const selectedSearchMode = document.getElementById("lookupType").value; //Aktuell gewählten Modus holen
   const input = document.getElementById("lookupValue").value; //Suchbegriff vom User holen
 
   if (selectedSearchMode === "name") {
     //Suche nach String
-    data = apiHandler.softwareSearch(input);
-    filterDeveloper(data);
+    try {
+      //Ajax Abfrage mit Error Handling
+      const data = await apiHandler.softwareSearch(input); //Ajax Abfrage starten und bei Erfolg Erebnis speichern
+      filterDeveloper(data); //Filter anwenden
+      console.log("Results from main: ", data.results); //debug
+    } catch (error) {
+      console.error("Fehler im Erfolgsbeispiel:", error.message); //Error handling
+    }
   } else if (selectedSearchMode === "id") {
-    //Suche nach ID
-    data = apiHandler.appIdLookup(input);
-    console.log(data);
+    //Suche nach ID.
+    try {
+      //Ajax Abfrage mit Error Handling
+      const data = await apiHandler.appIdLookup(input); //Ajax Abfrage starten und bei Erfolg Erebnis speichern
+      console.log("Results from main: ", data.results);
+    } catch (error) {
+      console.error("Fehler im Erfolgsbeispiel:", error.message); //Error handling
+    }
   } else {
+    //Error bei der Auswahl vom Suchmodus
     console.error("Unbekannte Suchmodus Auswahl");
   }
 });
@@ -109,8 +129,3 @@ lookupButton.addEventListener("click", function (e) {
 //apiHandler.appIdLookup("909253");
 //apiHandler.softwareSearch("spotify");
 //apiHandler.developerSearch("Microsoft");
-
-
-
-
-

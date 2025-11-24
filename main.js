@@ -12,18 +12,24 @@ const lookupButton = document.getElementById("lookupButton");
 //------------------------
 //Output
 //------------------------
-
-function displayApp(app) {
+/**
+ * Schreibt Infos zur ersten App aus aus dem Results Objekt in den DOM
+ * @param {*} apps Array mit der anzuzeigenden App im Index 0
+ * @returns null bei Error
+ */
+function displayApp(apps) {
   //Benötigte Infos aus App Objekt extrahieren (DOMPurify entfernt schädlichen code, || "" ist ein fallback falls es diesen Eintrag nicht gibt.)
   //DOMPurify siehe https://github.com/cure53/DOMPurify
-  console.log("DisplayApp erhält diese Daten aps PArameter: ", app.results);
 
-  if (app.results.length >= 0) {
-    app = app.results[0];
+  //Extrahieren der ersten App im Array
+  let app = "";
+  if (apps.length >= 0) {
+    app = apps[0];
   } else {
     console.error("API Error - Keine App Daten gefunden");
-    return;
+    return null;
   }
+  //Einzelne Daten extrahieren
   const img = DOMPurify.sanitize(app.artworkUrl512 || app.artworkUrl100 || "");
   const name = DOMPurify.sanitize(app.trackName || "");
   const bundle = DOMPurify.sanitize(app.bundleId || "");
@@ -34,6 +40,7 @@ function displayApp(app) {
   const developer = DOMPurify.sanitize(app.sellerName || "");
   const appStoreUrl = DOMPurify.sanitize(app.trackViewUrl || "#");
 
+  //Daten in den DOM schreiben in das Objekt mit der ID result.
   $("#result").html(`
       <div class="d-flex align-items-start mb-3">
         <img src="${img}" class="rounded me-3 shadow-sm" width="120" height="120" onerror="this.style.display='none'">
@@ -84,7 +91,7 @@ function getPlatform(app) {
     supported.some((d) => d.toLowerCase().includes("appletv"));
   const hasWatch = supported.some((d) => d.toLowerCase().includes("watch"));
 
-  console.log("supported Array: ", supported);
+  console.log("supported Array: ", supported); //Debug
   // macOS
   if (hasMac) return "Mac";
 
@@ -113,26 +120,46 @@ function getPlatform(app) {
 
 /**
  * Filtert das Resultat nach dem angegebenen Entwickler
- * @param {*} data data Objekt aus einer ajax Abfrage
+ * @param {*} apps apps Array mit Apps aus einer ajax Abfrage
+ * @returns Nach Entwickler gefiltertes apps Array
  */
-function filterDeveloper(data) {
+function filterDeveloper(apps) {
   const selectedDeveloper = document.getElementById("developerInput").value; //Gewählten Entwickler holen
-
+  let filteredApps = [];
   //Funktion überspringen wenn kein Entwickler angegeben wurde. Weigergeben an nächsten Filterschritt
   if (!selectedDeveloper) {
-    filterPlatform(result); //TODO fix
+    console.log("Keine Entwicklersuche"); //debug
+    return apps;
   }
 
-  for (const app of data.results) {
+  for (const app of apps) {
     if (app.sellerName === selectedDeveloper) {
+      filteredApps.push(app);
       console.log("Treffer:", app.trackName, app.sellerName);
     }
   }
+  console.log("Nach Entwickler gefilterte Apps: " + filteredApps); //Debug
+  return filteredApps;
 }
 
-function filterPlatform(data) {
-  //todo
-  //use getPlatform()
+function filterPlatform(apps) {
+  const selectedPlatform = $(".platform-dropdown input[type='checkbox']:checked"); //alle ausgewählten Platformen holen
+  let filteredApps = [];
+  //Funktion überspringen wenn keine Platform gefiltert wurde ODER alle Platformen gewählt sind
+  if (selectedPlatform.length === 0 || selectedPlatform.length === 6) {
+    console.log("Keine Platformsuche"); //debug
+    return apps;
+  }
+
+  for (const app of apps) {
+    const platform = app.getPlatform(app);
+    if (selectedPlatforms.some(platform => appPlatforms.includes(platform))) {//todo filter korrigieren. getPlatform gibt nur die erste gefundene platfomr zurück, was hier ein problem ist.
+      filteredApps.push(app);
+      console.log("Platform Treffer:", app.trackName, app.sellerName);
+    }
+  }
+  console.log("Nach Platform gefilterte Apps: " + filteredApps); //Debug
+  return filteredApps;
 }
 
 //------------------------
@@ -151,9 +178,11 @@ lookupButton.addEventListener("click", async function (e) {
     //Suche nach String
     try {
       //Ajax Abfrage mit Error Handling
-      const data = await apiHandler.softwareSearch(input); //Ajax Abfrage starten und bei Erfolg Erebnis speichern
-      filterDeveloper(data); //Filter anwenden
-      console.log("Results from main: ", data.results); //debug
+      const apiResponse = await apiHandler.softwareSearch(input); //Ajax Abfrage starten und bei Erfolg Erebnis speichern
+      let apps = apiResponse.results; //Umwandlung zu normalem Array für einfachere Handhabung
+      apps = filterDeveloper(apps); //Entwicklerfilter anwenden
+      apps = filterPlatform(apps); //Platformfilter anwenden
+      displayApp(apps); //todo! Temporät wird das erste ergebnis angezeigt. Muss aber ins dropdown.
     } catch (error) {
       console.error("Fehler im Erfolgsbeispiel:", error.message); //Error handling
     }
@@ -161,9 +190,9 @@ lookupButton.addEventListener("click", async function (e) {
     //Suche nach ID.
     try {
       //Ajax Abfrage mit Error Handling
-      const data = await apiHandler.appIdLookup(input); //Ajax Abfrage starten und bei Erfolg Erebnis speichern
-      console.log("Results from main: ", data.results);
-      displayApp(data);
+      const apiResponse = await apiHandler.appIdLookup(input); //Ajax Abfrage starten und bei Erfolg Erebnis speichern
+      const apps = apiResponse.results; //Umwandlung zu normalem Array für einfachere Handhabung
+      displayApp(apps); //Daten aufbereiten und in den DOM schreiben
     } catch (error) {
       console.error("Fehler im Erfolgsbeispiel:", error.message); //Error handling
     }
@@ -172,7 +201,3 @@ lookupButton.addEventListener("click", async function (e) {
     console.error("Unbekannte Suchmodus Auswahl");
   }
 });
-
-//apiHandler.appIdLookup("909253");
-//apiHandler.softwareSearch("spotify");
-//apiHandler.developerSearch("Microsoft");

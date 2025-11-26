@@ -32,13 +32,20 @@ export function appIdLookup(appID) {
 /**
  * Gibt die wahrscheinlichsten Ergebnisse für den angegebenen Suchbegriff zurück.
  * @param {*} term Suchbegriff für die Software
+ * @param {*} platform "desktop" für macOS Apps, "mobile" für alles andere. Standard ist "all".
  */
-export function softwareSearch(term) {
+export function softwareSearch(term, platform) {
+  //Rückgabe der Daten oder eines Fehlers vorbereiten
   return new Promise((resolve, reject) => {
-    //Rückgabe der Daten oder eines Fehlers vorbereiten
-    const media = "software";
+
+  //Filtere Medientyp anhand des Platformfilters.
+    let media = "all";
+    if (platform === "desktop") {
+      media = "macSoftware";
+    } else if (platform === "mobile") {
+      media = "software";
+    }
     const country = "CH"; //Schweizer AppStore
-    const entity = "software"; //softwareinfos erhalten, keine Filme, Musik etc.
     const maxResults = 50;
 
     $.ajax({
@@ -50,7 +57,6 @@ export function softwareSearch(term) {
         term: term,
         country: country,
         media: media,
-        entity: entity,
         limit: maxResults,
       },
       success: function (data) {

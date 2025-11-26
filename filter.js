@@ -1,11 +1,11 @@
 //------------------------
 //Resultatfilter
 //------------------------
+
 /**
- * Bestimmt die Plattform einer App aus iTunes Search API
- * Berücksichtigt sowohl supportedDevices als auch die Entity
- * @param {Object} app - App-Objekt aus iTunes API
- * @returns {string} Plattform: "iOS", "iPadOS", "Mac", "Universal", "tvOS", "watchOS", "unknown"
+ * Bestimmt die Plattform einer App aus iTunes Search API Berücksichtigt sowohl supportedDevices als auch die Entity
+ * @param {*} app App-Objekt aus iTunes API
+ * @returns As Array: Plattform: "iOS", "iPadOS", "Mac", "tvOS", "watchOS"
  */
 export function getPlatforms(app) {
   const entity = (app.entity || "").toLowerCase();
@@ -46,7 +46,7 @@ export function getPlatforms(app) {
 
 /**
  * Filtert das Resultat nach dem angegebenen Entwickler
- * @param {*} apps apps Array mit Apps aus einer ajax Abfrage
+ * @param {*} apps apps Array mit Apps
  * @returns Nach Entwickler gefiltertes apps Array
  */
 export function filterDeveloper(apps) {
@@ -61,15 +61,27 @@ export function filterDeveloper(apps) {
   for (const app of apps) {
     if (app.sellerName === selectedDeveloper) {
       filteredApps.push(app);
-      console.log("Treffer:", app.trackName, "| ID:", app.trackId, "| Developer:", app.sellerName); //debug
+      console.log(
+        "Treffer:",
+        app.trackName,
+        "| ID:",
+        app.trackId,
+        "| Developer:",
+        app.sellerName
+      ); //debug
     }
   }
   console.log("Nach Entwickler gefilterte Apps: " + filteredApps); //Debug
   return filteredApps;
 }
 
+/**
+ * Filtert nach vom User ausgewählten Platformen
+ * @param {*} apps Array mit Apps
+ * @returns Nach Platform gefiltertes apps Array
+ */
 export function filterPlatform(apps) {
-  //Benutzerauswahl holen und in ein Array umwandeln
+  //Benutzerauswahl für Platform holen und in ein Array umwandeln
   const selectedPlatforms = $(
     ".platform-dropdown input[type='checkbox']:checked"
   )
@@ -77,11 +89,10 @@ export function filterPlatform(apps) {
       return $(this).val();
     })
     .get();
-
   let filteredApps = [];
 
   //Keine Filterung bei entsprechender Eingabe. Die restliche Funktion wird übersprungen.
-  if (selectedPlatforms.length === 0 || selectedPlatforms.length === 6) {
+  if (selectedPlatforms.length === 0 || selectedPlatforms.length === 5) {
     console.log("Keine Platformsuche");
     return apps;
   }

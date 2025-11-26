@@ -77,30 +77,69 @@ lookupButton.addEventListener("click", async function (e) {
 
   const selectedSearchMode = document.getElementById("lookupType").value; //Aktuell gewählten Modus holen
   const input = document.getElementById("lookupValue").value; //Suchbegriff vom User holen
+  let mobileApps = [];
+  let mac_apps = [];
 
-
-
+  //---------Suche nach String---------
   if (selectedSearchMode === "name") {
-    //Suche nach String
-    try {
-      //Ajax Abfrage mit Error Handling
-      const apiResponse = await apiHandler.softwareSearch(input); //Ajax Abfrage starten und bei Erfolg Erebnis speichern
-      let apps = apiResponse.results; //Umwandlung zu normalem Array für einfachere Handhabung
-      apps = filter.filterDeveloper(apps); //Entwicklerfilter anwenden
-      apps = filter.filterPlatform(apps); //Platformfilter anwenden
-      displayApp(apps); //todo! Temporät wird das erste ergebnis angezeigt. Muss aber ins dropdown.
-    } catch (error) {
-      console.error("Fehler im Erfolgsbeispiel:", error.message); //Error handling
+    //Benutzerauswahl für Platform holen und in ein Array umwandeln
+    const selectedPlatforms = $(
+      ".platform-dropdown input[type='checkbox']:checked"
+    )
+      .map(function () {
+        return $(this).val();
+      })
+      .get();
+
+    //Separate ajax Abfrage für macOS, weil die iTunes API bei der normalen Abfrage mobile-Apps zu stark priorisiert
+    if (selectedPlatforms.includes("macOS") || selectedPlatforms.length === 0 || selectedPlatforms.length === 5) {
+      console.log("macOS Ajax Abfrage startet"); //debug
+      try {
+        const macOS_apiResponse = await apiHandler.softwareSearch(
+          input,
+          "desktop"
+        ); //Ajax Abfrage spezifisch für macOS starten und bei Erfolg Erebnis speichern
+        mac_apps = macOS_apiResponse.results; //Umwandlung zu normalem Array für einfachere Handhabung
+      } catch (error) {
+        //Error handling
+        console.error(
+          "Fehler bei der macOS-spezifischen iTunes API-Ajax Abfrage:",
+          error.message
+        );
+      }
     }
+
+    //immer ausser wenn ausschliesslich nach macOS gesucht wird:
+    const isOnlyMacSelected =
+      selectedPlatforms.length === 1 &&
+      selectedPlatforms.includes("macOS");
+    if (!isOnlyMacSelected || selectedPlatforms.length === 0 || selectedPlatforms.length === 5) {
+      console.log("mobile Ajax Abfrage startet"); //debug
+      try {
+        //Ajax Abfrage mit Error Handling
+        const apiResponse = await apiHandler.softwareSearch(input, "mobile"); //Ajax Abfrage starten und bei Erfolg Erebnis speichern
+        mobileApps = apiResponse.results; //Umwandlung zu normalem Array für einfachere Handhabung
+      } catch (error) {
+        console.error("Fehler bei der iTunes API-Ajax Abfrage:", error.message); //Error handling
+      }
+    }
+
+    //beide cases zusammenführen
+    let combinedResults = [...(mobileApps || []), ...(mac_apps || [])]; //egal welche Kombination vorhanden ist fehlerfrei zusammenführen.
+    //Steuerung für weiteren Ablauf
+    combinedResults = filter.filterDeveloper(combinedResults); //Entwicklerfilter anwenden
+    combinedResults = filter.filterPlatform(combinedResults); //Platformfilter anwenden
+    displayApp(combinedResults); //todo! Temporät wird das erste ergebnis angezeigt. Muss aber ins dropdown.
+
+    //---------Suche nach ID.---------
   } else if (selectedSearchMode === "id") {
-    //Suche nach ID.
     try {
       //Ajax Abfrage mit Error Handling
       const apiResponse = await apiHandler.appIdLookup(input); //Ajax Abfrage starten und bei Erfolg Erebnis speichern
       const apps = apiResponse.results; //Umwandlung zu normalem Array für einfachere Handhabung
       displayApp(apps); //Daten aufbereiten und in den DOM schreiben
     } catch (error) {
-      console.error("Fehler im Erfolgsbeispiel:", error.message); //Error handling
+      console.error("Fehler bei der iTunes API-Ajax Abfrage:", error.message); //Error handling
     }
   } else {
     //Error bei der Auswahl vom Suchmodus

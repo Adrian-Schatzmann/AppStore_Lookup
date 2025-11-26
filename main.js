@@ -9,6 +9,11 @@ import * as filter from "./filter.js";
 //DOM Referenzen
 //------------------------
 const lookupButton = document.getElementById("lookupButton");
+//Referenzen für das Entwickler-Feature
+const developerInput = document.getElementById("developerInput");
+const developerSuggestions = document.getElementById("developerSuggestions");
+const lookupInput = document.getElementById("lookupValue");
+const suggestionsMenu = document.getElementById("suggestions");
 
 //------------------------
 //Output
@@ -92,7 +97,11 @@ lookupButton.addEventListener("click", async function (e) {
       .get();
 
     //Separate ajax Abfrage für macOS, weil die iTunes API bei der normalen Abfrage mobile-Apps zu stark priorisiert
-    if (selectedPlatforms.includes("macOS") || selectedPlatforms.length === 0 || selectedPlatforms.length === 5) {
+    if (
+      selectedPlatforms.includes("macOS") ||
+      selectedPlatforms.length === 0 ||
+      selectedPlatforms.length === 5
+    ) {
       console.log("macOS Ajax Abfrage startet"); //debug
       try {
         const macOS_apiResponse = await apiHandler.softwareSearch(
@@ -111,9 +120,12 @@ lookupButton.addEventListener("click", async function (e) {
 
     //immer ausser wenn ausschliesslich nach macOS gesucht wird:
     const isOnlyMacSelected =
-      selectedPlatforms.length === 1 &&
-      selectedPlatforms.includes("macOS");
-    if (!isOnlyMacSelected || selectedPlatforms.length === 0 || selectedPlatforms.length === 5) {
+      selectedPlatforms.length === 1 && selectedPlatforms.includes("macOS");
+    if (
+      !isOnlyMacSelected ||
+      selectedPlatforms.length === 0 ||
+      selectedPlatforms.length === 5
+    ) {
       console.log("mobile Ajax Abfrage startet"); //debug
       try {
         //Ajax Abfrage mit Error Handling
@@ -144,5 +156,82 @@ lookupButton.addEventListener("click", async function (e) {
   } else {
     //Error bei der Auswahl vom Suchmodus
     console.error("Unbekannte Suchmodus Auswahl");
+  }
+});
+
+//------------------------
+//Entwickler-Autocomplete Feature
+//------------------------
+let debounceTimer;
+
+/**
+ * Zeigt die Entwickler-Vorschläge im Dropdown an
+ * @param {*} results Array von API-Resultaten
+ */
+function showDeveloperSuggestions(results) {
+  // Container leeren
+  developerSuggestions.innerHTML = "";
+
+  if (!results || results.length === 0) {
+    developerSuggestions.classList.remove("show"); // Verstecken
+    return;
+  }
+
+  // Set nutzen, um Duplikate zu entfernen (API liefert oft denselben Dev mehrfach für verschiedene Apps)
+  const uniqueDevelopers = [...new Set(results.map((item) => item.artistName))];
+
+  // HTML für jeden Vorschlag erstellen
+  uniqueDevelopers.forEach((devName) => {
+    const item = document.createElement("button");
+    item.type = "button";
+    item.classList.add("dropdown-item");
+    item.textContent = devName; // Sicherer als innerHTML
+
+    // Klick-Handler für Auswahl
+    item.addEventListener("click", () => {
+      developerInput.value = devName; // Wert übernehmen
+      developerSuggestions.classList.remove("show"); // Dropdown schließen
+      developerSuggestions.innerHTML = ""; // Aufräumen
+    });
+
+    developerSuggestions.appendChild(item);
+  });
+
+  // Dropdown anzeigen
+  developerSuggestions.classList.add("show");
+}
+
+/**
+ * Event Listener für das Entwickler-Eingabefeld
+ */
+developerInput.addEventListener("input", function () {
+  const term = this.value.trim();
+
+  // Laufenden Timer abbrechen
+  clearTimeout(debounceTimer);
+
+  if (term.length < 3) {
+    developerSuggestions.classList.remove("show");
+    return;
+  }
+
+  // API-Aufruf um 300ms verzögern
+  debounceTimer = setTimeout(async () => {
+    try {
+      const response = await apiHandler.developerSearch(term);
+      showDeveloperSuggestions(response.results);
+    } catch (error) {
+      console.error("Fehler beim Entwickler-Autocomplete:", error);
+    }
+  }, 300);
+});
+
+// Schließen des Dropdowns, wenn man woanders hinklickt
+document.addEventListener("click", function (e) {
+  if (
+    !developerInput.contains(e.target) &&
+    !developerSuggestions.contains(e.target)
+  ) {
+    developerSuggestions.classList.remove("show");
   }
 });

@@ -35,7 +35,7 @@ function displayApp(apps) {
   const bundle = DOMPurify.sanitize(app.bundleId || "");
   const version = DOMPurify.sanitize(app.version || "");
   const genre = DOMPurify.sanitize(app.primaryGenreName || "");
-  const platform = DOMPurify.sanitize(getPlatform(app));
+  const platform = getPlatforms(app).join(', ');;
   const description = DOMPurify.sanitize(app.description || "");
   const developer = DOMPurify.sanitize(app.sellerName || "");
   const appStoreUrl = DOMPurify.sanitize(app.trackViewUrl || "#");
@@ -74,48 +74,30 @@ function displayApp(apps) {
  * @param {Object} app - App-Objekt aus iTunes API
  * @returns {string} Plattform: "iOS", "iPadOS", "Mac", "Universal", "tvOS", "watchOS", "unknown"
  */
-function getPlatform(app) {
+function getPlatforms(app) {
   const entity = (app.entity || "").toLowerCase();
   //supported ist ein Array von Gerätenamen aus supportedDevices der API (iPadAir2, iPhone12 etc.)
   const supported = app.supportedDevices || [];
+  let platformList = [];
   //.some(...) prüft, ob mindestens ein Eintrag die Bedingung erfüllt
   //d.toLowerCase().includes("iphone") → wandelt den Gerätenamen in Kleinbuchstaben und prüft, ob "iphone" darin vorkommt.
   //Ergebnis jeweils true, wenn mindestens ein Eintrag gefunden wurde
-  const hasIphone = supported.some((d) => d.toLowerCase().includes("iphone"));
-  const hasIpad = supported.some((d) => d.toLowerCase().includes("ipad"));
-  const hasMac =
-    entity === "macsoftware" ||
-    supported.some((d) => d.toLowerCase().includes("mac"));
-  const hasAppleTV =
-    (app.appletvScreenshotUrls || []).length > 0 || //sucht zusätzlich nach appletvScreenshotUrls -> zuverlässiger als supportedDevices für AppleTV
-    supported.some((d) => d.toLowerCase().includes("appletv"));
-  const hasWatch = supported.some((d) => d.toLowerCase().includes("watch"));
-
-  console.log("supported Array: ", supported); //Debug
-  // macOS
-  if (hasMac) return "Mac";
-
-  // tvOS
-  if (hasAppleTV) return "tvOS";
-
-  // watchOS
-  if (hasWatch) return "watchOS";
-
-  // iPhone + iPad = Universal
-  if (hasIphone && hasIpad) return "Universal";
-
-  // nur iPad
-  if (!hasIphone && hasIpad) return "iPadOS";
-
-  // nur iPhone
-  if (hasIphone && !hasIpad) return "iOS";
-
-  // Fallback
-  console.error(
-    "Softwareplattform konnte nicht identifiziert werden! Details: ",
-    app
-  );
-  return "unknown";
+  if (supported.some((d) => d.toLowerCase().includes("iphone"))) {
+    platformList.push("iOS");
+  }
+  if (supported.some((d) => d.toLowerCase().includes("ipad"))) {
+    platformList.push("iPadOS");
+  }
+  if (supported.some((d) => d.toLowerCase().includes("mac"))) {
+    platformList.push("macOS");
+  }
+  if (supported.some((d) => d.toLowerCase().includes("appletv"))) {
+    platformList.push("tvOS");
+  }
+  if (supported.some((d) => d.toLowerCase().includes("watch"))) {
+    platformList.push("watchOS");
+  }
+  return platformList;
 }
 
 /**
@@ -143,22 +125,37 @@ function filterDeveloper(apps) {
 }
 
 function filterPlatform(apps) {
-  const selectedPlatform = $(".platform-dropdown input[type='checkbox']:checked"); //alle ausgewählten Platformen holen
+  //Benutzerauswahl holen und in ein Array umwandeln
+  const selectedPlatforms = $(
+    ".platform-dropdown input[type='checkbox']:checked"
+  )
+    .map(function () {
+      return $(this).val();
+    })
+    .get();
+
   let filteredApps = [];
-  //Funktion überspringen wenn keine Platform gefiltert wurde ODER alle Platformen gewählt sind
-  if (selectedPlatform.length === 0 || selectedPlatform.length === 6) {
-    console.log("Keine Platformsuche"); //debug
+
+  //Keine Filterung bei entsprechender Eingabe. Die restliche Funktion wird übersprungen.
+  if (selectedPlatforms.length === 0 || selectedPlatforms.length === 6) {
+    console.log("Keine Platformsuche");
     return apps;
   }
 
+  //Schleife durch alle Apps
   for (const app of apps) {
-    const platform = app.getPlatform(app);
-    if (selectedPlatforms.some(platform => appPlatforms.includes(platform))) {//todo filter korrigieren. getPlatform gibt nur die erste gefundene platfomr zurück, was hier ein problem ist.
+    //erhalte ein Array mit den kompatiblen Platformen
+    const appPlatforms = getPlatforms(app);
+
+    //Gibt es irgendeine (some) ausgewählte Plattform, die in den App-Plattformen enthalten (includes) ist?
+    if (selectedPlatforms.some((selected) => appPlatforms.includes(selected))) {
+      //App zum Output Array hinzufügen
       filteredApps.push(app);
-      console.log("Platform Treffer:", app.trackName, app.sellerName);
+      console.log("Platform Treffer:", app.trackName); //debug
     }
   }
-  console.log("Nach Platform gefilterte Apps: " + filteredApps); //Debug
+
+  console.log("Nach Platform gefilterte Apps: " + filteredApps.length); //debug
   return filteredApps;
 }
 

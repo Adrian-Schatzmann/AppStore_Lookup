@@ -10,9 +10,9 @@ import * as filter from "./filter.js";
 //------------------------
 const lookupButton = document.getElementById("lookupButton");
 //Referenzen für das Entwickler-Feature
-const developerInput = document.getElementById("developerInput");
+const developerInput = $("#developerInput");
 const developerSuggestions = document.getElementById("developerSuggestions");
-const lookupInput = document.getElementById("lookupValue");
+const lookupInput = $("#lookupValue");
 const suggestionsMenu = document.getElementById("suggestions");
 
 //------------------------
@@ -92,6 +92,9 @@ function displayApp(apps) {
 
 
 */
+/**
+ * Event Listener für den Such-Button. Startet die App Abfrage und Ergebnisfilter. 
+ */
 lookupButton.addEventListener("click", async function (e) {
   e.preventDefault(); //verhindet das Neuladen der Seite beim Absenden vom Formular
   const apps = await getProcessedApps();
@@ -115,8 +118,6 @@ lookupButton.addEventListener("click", async function (e) {
 async function getProcessedApps() {
   const selectedSearchMode = document.getElementById("lookupType").value; //Aktuell gewählten Modus holen
   const input = document.getElementById("lookupValue").value; //Suchbegriff vom User holen
-  let mobileApps = [];
-  let mac_apps = [];
   const searchPromises = []; //Dynamische Promises-Liste
   let combinedResults = [];
 
@@ -226,80 +227,104 @@ async function getProcessedApps() {
 
 
 
-*/
+
 //------------------------
 //Entwickler-Autocomplete Feature
 //------------------------
-let debounceTimer;
+
 
 /**
- * Zeigt die Entwickler-Vorschläge im Dropdown an
- * @param {*} results Array von API-Resultaten
+ * Generische Funktion zur Befüllung eines beliebigen Dropdown-Menüs mit Vorschlägen.
+ * @param {HTMLElement} suggestionsContainer Der DOM-Container für die Vorschläge (z.B. suggestionsMenu).
+ * @param {Array} results Das Array von Objekten, die die API zurückgibt (z.B. app- oder developer-Objekte).
+ * @param {string} keyProperty Die Eigenschaft des Objekts, die als Text angezeigt werden soll (z.B. 'artistName' oder 'trackName').
  */
-function showDeveloperSuggestions(results) {
-  // Container leeren
-  developerSuggestions.innerHTML = "";
+/*
+function populateSuggestions(suggestionsContainer, results, keyProperty) {
+  // Container leeren und standardmäßig ausblenden
+  suggestionsContainer.textContent = "";
+  suggestionsContainer.classList.remove("show");
 
-  if (!results || results.length === 0) {
-    developerSuggestions.classList.remove("show"); // Verstecken
+ if (!results || results.length === 0) {
     return;
   }
 
-  // Set nutzen, um Duplikate zu entfernen (API liefert oft denselben Dev mehrfach für verschiedene Apps)
-  const uniqueDevelopers = [...new Set(results.map((item) => item.artistName))];
 
-  // HTML für jeden Vorschlag erstellen
-  uniqueDevelopers.forEach((devName) => {
+
+  // Array mit den eindeutigen Werten der angezeigten Eigenschaft
+  const uniqueNames = Array.from(uniqueItemsMap.keys());
+
+
+  //Nur die ersten 10 Vorschläge anzeigen
+  uniqueNames.slice(0, 10).forEach((name) => {
     const item = document.createElement("button");
     item.type = "button";
     item.classList.add("dropdown-item");
-    item.textContent = devName; // Sicherer als innerHTML
+    item.textContent = name;
 
-    // Klick-Handler für Auswahl
+    //Klick-Handler für Auswahl
     item.addEventListener("click", () => {
-      developerInput.value = devName; // Wert übernehmen
-      developerSuggestions.classList.remove("show"); // Dropdown schließen
-      developerSuggestions.innerHTML = ""; // Aufräumen
+      const test = [name]
+      displayApp(test);
+      suggestionsContainer.classList.remove("show"); //Dropdown schließen
+      suggestionsContainer.textContent = "";
     });
 
-    developerSuggestions.appendChild(item);
+    suggestionsContainer.appendChild(item);
   });
 
   // Dropdown anzeigen
-  developerSuggestions.classList.add("show");
+  suggestionsContainer.classList.add("show");
 }
+*/
+
+/**
+ * Schließt alle Autocomplete-Dropdowns, wenn man außerhalb klickt.
+ */
+/*
+document.addEventListener("click", function (e) {
+  if (
+    !developerInput.contains(e.target) &&
+    !developerSuggestions.contains(e.target) &&
+    !lookupInput.contains(e.target) &&
+    !suggestionsMenu.contains(e.target)
+  ) {
+    developerSuggestions.classList.remove("show");
+    suggestionsMenu.classList.remove("show");
+  }
+});
+*/
+
+/**
+ * Debounce Timer für Funktionen, in denen auf Usereingaben gewartet werden soll.
+ * @param {*} fn Funktion die nach dem Timer ausgeführt wird
+ * @param {*} delay Verzögerung in ms
+ */
+function debounce(fn, delay) {
+  let timer;
+  return function(...args) {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn.apply(this, args), delay);
+  };
+}
+
+
+
 
 /**
  * Event Listener für das Entwickler-Eingabefeld
  */
-developerInput.addEventListener("input", function () {
-  const term = this.value.trim();
-
-  // Laufenden Timer abbrechen
-  clearTimeout(debounceTimer);
-
-  if (term.length < 3) {
-    developerSuggestions.classList.remove("show");
-    return;
-  }
-
-  // API-Aufruf um 300ms verzögern
-  debounceTimer = setTimeout(async () => {
-    try {
-      const response = await apiHandler.developerSearch(term);
-      showDeveloperSuggestions(response.results);
-    } catch (error) {
-      console.error("Fehler beim Entwickler-Autocomplete:", error);
-    }
-  }, 300);
+developerInput.on("input", debounce(function () {
+  console.log(developerInput.val());
 });
 
-// Schließen des Dropdowns, wenn man woanders hinklickt
-document.addEventListener("click", function (e) {
-  if (
-    !developerInput.contains(e.target) &&
-    !developerSuggestions.contains(e.target)
-  ) {
-    developerSuggestions.classList.remove("show");
-  }
-});
+
+/**
+ * Event Listener für das App-Namen-Eingabefeld
+ */
+lookupInput.on("input", debounce(function () {
+  console.log(lookupInput.val());
+}, 300));
+
+
+

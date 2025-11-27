@@ -24,6 +24,7 @@ const suggestionsMenu = document.getElementById("suggestions");
  * @returns null bei Error
  */
 function displayApp(apps) {
+  console.log(apps);
   //Benötigte Infos aus App Objekt extrahieren (DOMPurify entfernt schädlichen code, || "" ist ein fallback falls es diesen Eintrag nicht gibt.)
   //DOMPurify siehe https://github.com/cure53/DOMPurify
 
@@ -70,20 +71,54 @@ function displayApp(apps) {
       </div>
     `);
 }
+/*
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+*/
+lookupButton.addEventListener("click", async function (e) {
+  e.preventDefault(); //verhindet das Neuladen der Seite beim Absenden vom Formular
+  const apps = await getProcessedApps();
+  console.log("wir sind beim lookupButton-Eventlistener. " + apps);
+  //Steuerung für weiteren Ablauf
+  const appliedDevFilter = filter.filterDeveloper(apps); //Entwicklerfilter anwenden
+  const appliedPlatformFilter = filter.filterPlatform(appliedDevFilter); //Platformfilter anwenden
+  displayApp(appliedPlatformFilter);
+});
+/*
+
+
+*/
 //------------------------
 //Main-Ablauf
 //------------------------
 /**
- * Erkennt das Auslösen einer Suche und startet die entsprechenden Funktionen
+ * Handelt ajax requests anhand von Usereingaben. Kombiniert wenn nötig macOS und mobile Abfragen.
+ * @returns Array mit den Apps aus der iTunes api.
  */
-lookupButton.addEventListener("click", async function (e) {
-  e.preventDefault(); //verhindet das Neuladen der Seite beim Absenden vom Formular
-
+async function getProcessedApps() {
   const selectedSearchMode = document.getElementById("lookupType").value; //Aktuell gewählten Modus holen
   const input = document.getElementById("lookupValue").value; //Suchbegriff vom User holen
   let mobileApps = [];
   let mac_apps = [];
+  const searchPromises = []; //Dynamische Promises-Liste
+  let combinedResults = [];
 
   //---------Suche nach String---------
   if (selectedSearchMode === "name") {
@@ -104,11 +139,13 @@ lookupButton.addEventListener("click", async function (e) {
     ) {
       console.log("macOS Ajax Abfrage startet"); //debug
       try {
-        const macOS_apiResponse = await apiHandler.softwareSearch(
-          input,
-          "desktop"
-        ); //Ajax Abfrage spezifisch für macOS starten und bei Erfolg Erebnis speichern
-        mac_apps = macOS_apiResponse.results; //Umwandlung zu normalem Array für einfachere Handhabung
+        //Ajax Abfrage spezifisch für macOS starten und in searchPromises speichern. Await kommt später.
+        searchPromises.push(
+          apiHandler.softwareSearch(
+            input,
+            "desktop" /*, Parameter für Mobile */
+          )
+        );
       } catch (error) {
         //Error handling
         console.error(
@@ -128,20 +165,30 @@ lookupButton.addEventListener("click", async function (e) {
     ) {
       console.log("mobile Ajax Abfrage startet"); //debug
       try {
-        //Ajax Abfrage mit Error Handling
-        const apiResponse = await apiHandler.softwareSearch(input, "mobile"); //Ajax Abfrage starten und bei Erfolg Erebnis speichern
-        mobileApps = apiResponse.results; //Umwandlung zu normalem Array für einfachere Handhabung
+        //Ajax Abfrage, in searchPromises speichern. Await kommt später.
+        searchPromises.push(apiHandler.softwareSearch(input, "mobile"));
       } catch (error) {
         console.error("Fehler bei der iTunes API-Ajax Abfrage:", error.message); //Error handling
       }
     }
 
     //beide cases zusammenführen
-    let combinedResults = [...(mobileApps || []), ...(mac_apps || [])]; //egal welche Kombination vorhanden ist fehlerfrei zusammenführen.
-    //Steuerung für weiteren Ablauf
-    combinedResults = filter.filterDeveloper(combinedResults); //Entwicklerfilter anwenden
-    combinedResults = filter.filterPlatform(combinedResults); //Platformfilter anwenden
-    displayApp(combinedResults); //todo! Temporät wird das erste ergebnis angezeigt. Muss aber ins dropdown.
+    //Auf alle (1 oder 2) Ergebnisse warten. Promise.all wartet auf alle Promises im Array, egal wie viele es sind.
+    try {
+      const allResponses = await Promise.all(searchPromises);
+
+      //Iterieren über alle erhaltenen Responses
+      for (const response of allResponses) {
+        //Kombinieren mit Umwandlung zu normalem Array für einfachere Handhabung
+        combinedResults.push(...(response.results || []));
+      }
+
+      return combinedResults;
+    } catch (error) {
+      //Error handling wenn mindestens eine der Anfragen fehlschlägt
+      console.error("Fehler bei der kombinierten Suche:", error);
+      return []; //Leeres Array zurückgeben, damit die UI nicht crasht
+    }
 
     //---------Suche nach ID.---------
   } else if (selectedSearchMode === "id") {
@@ -149,7 +196,7 @@ lookupButton.addEventListener("click", async function (e) {
       //Ajax Abfrage mit Error Handling
       const apiResponse = await apiHandler.appIdLookup(input); //Ajax Abfrage starten und bei Erfolg Erebnis speichern
       const apps = apiResponse.results; //Umwandlung zu normalem Array für einfachere Handhabung
-      displayApp(apps); //Daten aufbereiten und in den DOM schreiben
+      return apps;
     } catch (error) {
       console.error("Fehler bei der iTunes API-Ajax Abfrage:", error.message); //Error handling
     }
@@ -157,8 +204,29 @@ lookupButton.addEventListener("click", async function (e) {
     //Error bei der Auswahl vom Suchmodus
     console.error("Unbekannte Suchmodus Auswahl");
   }
-});
+}
 
+/*
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+*/
 //------------------------
 //Entwickler-Autocomplete Feature
 //------------------------

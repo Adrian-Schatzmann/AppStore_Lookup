@@ -15,16 +15,17 @@ const searchTermInput = $("#searchTermInput");
 const softwareSuggestions = $("#softwareSuggestions");
 
 /**
- * Event Listener für den Such-Button. Startet die App Abfrage und Ergebnisfilter.
+ * Event Listener für den Such-Button. Startet die App Abfrage und Ergebnisfilter. Wird aller Wahrscheinlichkeit nur im ID-Modus verwendet.
  */
 searchButton.on("click", async function (e) {
   e.preventDefault(); //verhindet das Neuladen der Seite beim Absenden vom Formular
   const input = searchTermInput.val(); //Suchbegriff vom User holen
   const apps = await getProcessedApps(input);
   console.log("wir sind beim searchButton-Eventlistener. " + apps); //debug
-  //Steuerung für weiteren Ablauf
+  //Steuerung für weiteren Ablauf.
   const appliedDevFilter = filter.filterDeveloper(apps); //Entwicklerfilter anwenden
   const appliedPlatformFilter = filter.filterPlatform(appliedDevFilter); //Platformfilter anwenden
+  const sortedByRelevance = filter.sortAppsByRelevance(appliedPlatformFilter, input);
   ui.displayApp(appliedPlatformFilter);
 });
 
@@ -212,11 +213,14 @@ searchTermInput.on(
     try {
       //Ajax Abfrage
       const combinedResults = await getProcessedApps(searchTermInput.val());
-      console.log("reached here", combineResults);
+      const appliedDevFilter = filter.filterDeveloper(combinedResults); //Entwicklerfilter anwenden
+      const appliedPlatformFilter = filter.filterPlatform(appliedDevFilter); //Platformfilter anwenden
+      const sortedByRelevance = filter.sortAppsByRelevance(appliedPlatformFilter, searchTermInput.val()); //Ergebnisse nach Relevanz sortieren
+     
       //Resultate dem User anzeigen
       ui.populateSuggestions(
         softwareSuggestions,
-        combinedResults,
+        sortedByRelevance,
         searchTermInput
       );
     } catch (error) {

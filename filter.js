@@ -113,3 +113,51 @@ export function filterPlatform(apps) {
   console.log("Nach Platform gefilterte Apps: " + filteredApps.length); //debug
   return filteredApps;
 }
+
+/**
+ * Sortiert Objekt mit Apps anhand verschiedenen Kriterien nach Relevanz
+ * @param {*} apps Objekt mit mehreren Apps
+ * @param {*} searchTerm Begriff, nach dem gesucht werden soll
+ * @returns sortiertes array
+ */
+export function sortAppsByRelevance(apps, searchTerm) {
+  const term = searchTerm.toLowerCase();
+
+  return apps.sort((a, b) => {
+    //Wir vergleichen immer zwei Apps (a und b) miteinander
+    const nameA = (a.trackName || "").toLowerCase().trim();;
+    const nameB = (b.trackName || "").toLowerCase().trim();;
+
+    // --- TIER 1: Exakter Match (Der "Killer") ---
+    //Wenn A genau dem Suchbegriff entspricht, gewinnt A sofort (-1).
+    if (nameA === term && nameB !== term) return -1;
+    if (nameB === term && nameA !== term) return 1;
+
+    // --- TIER 2: Beginnt mit Suchbegriff ---
+    const startA = nameA.startsWith(term);
+    const startB = nameB.startsWith(term);
+
+    if (startA && !startB) return -1;
+    if (!startA && startB) return 1;
+
+    // Wenn BEIDE mit dem Begriff starten
+    if (startA && startB) {
+      //Tier 2.1 - Der kürzere Name gewinnt
+      if (nameA.length !== nameB.length) {
+        return nameA.length - nameB.length; // Aufsteigend: Kürzere Strings zuerst
+      }
+    }
+    // --- TIER 3: Popularität (Anzahl Bewertungen als Tie-Breaker) ---
+    //Popularität holen (Anzahl Bewertungen).
+    const popA = a.userRatingCount || 0;
+    const popB = b.userRatingCount || 0;
+
+    if (popA !== popB) {
+      return popB - popA; //Absteigende Sortierung (Höhere Zahl zuerst)
+    }
+
+    // --- TIER 4: Fallback ---
+    //Wenn alles andere gleich ist, sortieren nach Alphabet
+    return nameA.localeCompare(nameB);
+  });
+}

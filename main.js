@@ -14,6 +14,10 @@ const developerSuggestions = $("#developerSuggestions");
 const searchTermInput = $("#searchTermInput");
 const softwareSuggestions = $("#softwareSuggestions");
 
+//------------------------
+//Hauptfunktionen
+//------------------------
+
 /**
  * Event Listener für den Such-Button. Startet die App Abfrage und Ergebnisfilter. Wird aller Wahrscheinlichkeit nur im ID-Modus verwendet.
  */
@@ -29,9 +33,6 @@ searchButton.on("click", async function (e) {
   ui.displayApp(appliedPlatformFilter);
 });
 
-//------------------------
-//Hauptfunktionen
-//------------------------
 /**
  * Handelt ajax requests anhand von Usereingaben. Kombiniert wenn nötig macOS und mobile Abfragen.
  * @param {*} input Suchbegriff
@@ -62,7 +63,7 @@ async function getProcessedApps(input) {
       try {
         //Ajax Abfrage spezifisch für macOS starten und in searchPromises speichern. Await kommt später.
         searchPromises.push(
-          apiHandler.iTunesSearchAPI(input, "desktop", "", 25)
+          apiHandler.iTunesSearchAPI(input, "desktop", "", 10)
         );
       } catch (error) {
         //Error handling
@@ -85,7 +86,7 @@ async function getProcessedApps(input) {
       try {
         //Ajax Abfrage, in searchPromises speichern. Await kommt später.
         searchPromises.push(
-          apiHandler.iTunesSearchAPI(input, "mobile", "", 25)
+          apiHandler.iTunesSearchAPI(input, "mobile", "", 10)
         );
       } catch (error) {
         console.error("Fehler bei der iTunes API-Ajax Abfrage:", error.message); //Error handling
@@ -126,7 +127,6 @@ async function combineResults(searchPromises) {
       //Kombinieren mit Umwandlung zu normalem Array für einfachere Handhabung
       combinedResults.push(...(response.results || []));
     }
-    console.log("test" + combinedResults);
     return combinedResults;
   } catch (error) {
     //Error handling wenn mindestens eine der Anfragen fehlschlägt
@@ -150,7 +150,7 @@ function debounce(fn, delay) {
 }
 
 /**
- * Event Listener für das Entwickler-Eingabefeld
+ * Event Listener für das Entwickler-Eingabefeld. Suche nach Entwicklern von Apps nach mehreren Platformen.
  */
 developerInput.on(
   "input",
@@ -197,7 +197,7 @@ developerInput.on(
       console.error("Fehler bei der kombinierten Entwicklersuche:", error);
       return []; //Leeres Array zurückgeben, damit die UI nicht crasht
     }
-  }, 300)
+  }, 200)
 );
 
 /**
@@ -216,7 +216,7 @@ searchTermInput.on(
       const appliedDevFilter = filter.filterDeveloper(combinedResults); //Entwicklerfilter anwenden
       const appliedPlatformFilter = filter.filterPlatform(appliedDevFilter); //Platformfilter anwenden
       const sortedByRelevance = filter.sortAppsByRelevance(appliedPlatformFilter, searchTermInput.val()); //Ergebnisse nach Relevanz sortieren
-     
+     console.log("Fertig gefilterte und sortierte Apps: ", sortedByRelevance);
       //Resultate dem User anzeigen
       ui.populateSuggestions(
         softwareSuggestions,
@@ -228,5 +228,5 @@ searchTermInput.on(
       console.error("Fehler bei der Softwaresuche:", error);
       return []; //Leeres Array zurückgeben, damit die UI nicht crasht
     }
-  }, 300)
+  }, 200)
 );

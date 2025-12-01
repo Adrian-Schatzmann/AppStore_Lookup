@@ -27,7 +27,6 @@ export function getPlatforms(app) {
     kind === "mac-software"
   ) {
     //kind mac-software wegen edgecase für z.B. iMovie
-    console.log("macos filter reached");
     platformList.push("macOS");
   }
   if (
@@ -61,17 +60,9 @@ export function filterDeveloper(apps) {
   for (const app of apps) {
     if (app.sellerName === selectedDeveloper) {
       filteredApps.push(app);
-      console.log(
-        "Treffer:",
-        app.trackName,
-        "| ID:",
-        app.trackId,
-        "| Developer:",
-        app.sellerName
-      ); //debug
     }
   }
-  console.log("Nach Entwickler gefilterte Apps: " + filteredApps); //Debug
+  console.log("Nach Entwickler gefilterte Apps: " + filteredApps.length); //Debug
   return filteredApps;
 }
 
@@ -106,7 +97,6 @@ export function filterPlatform(apps) {
     if (selectedPlatforms.some((selected) => appPlatforms.includes(selected))) {
       //App zum Output Array hinzufügen
       filteredApps.push(app);
-      console.log("Platform Treffer:", app.trackName); //debug
     }
   }
 

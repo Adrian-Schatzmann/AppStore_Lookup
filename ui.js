@@ -196,6 +196,7 @@ export function displayApp(apps) {
   const img = DOMPurify.sanitize(app.artworkUrl512 || app.artworkUrl100 || "");
   const name = DOMPurify.sanitize(app.trackName || "");
   const bundle = DOMPurify.sanitize(app.bundleId || "");
+  const id = DOMPurify.sanitize(app.trackId || "");
   const version = DOMPurify.sanitize(app.version || "");
   const genre = DOMPurify.sanitize(app.primaryGenreName || "");
   const platform = filter.getPlatforms(app).join(", ");
@@ -209,6 +210,7 @@ export function displayApp(apps) {
         <img src="${img}" class="rounded me-3 shadow-sm" width="120" height="120" onerror="this.style.display='none'">
         <div class="flex-grow-1">
           <h4>${name}</h4>
+          <p class="mb-1"><strong>App ID:</strong> ${id}</p>
           <p class="mb-1"><strong>Bundle ID:</strong> ${bundle}</p>
           <p class="mb-1"><strong>Version:</strong> ${version}</p>
           <p class="mb-1"><strong>Category:</strong> ${genre}</p>

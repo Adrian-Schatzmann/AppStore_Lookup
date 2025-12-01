@@ -35,7 +35,7 @@ export function getPlatforms(app) {
     (app.appletvScreenshotUrls && app.appletvScreenshotUrls.length > 0) ||
     (app.tvosScreenshotUrls && app.tvosScreenshotUrls.length > 0)
   ) {
-    platformList.push("tvOS");
+    platformList.push("tv");
   }
   if (supported.some((d) => d.toLowerCase().includes("watch"))) {
     platformList.push("watchOS");

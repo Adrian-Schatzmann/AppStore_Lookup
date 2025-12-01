@@ -1,67 +1,48 @@
-🍏 App Store Lookup and Filter Tool
+# 🍏 App Store Lookup and Filter Tool
 
-This is a modern, client-side web application designed to efficiently search, retrieve, and analyze app data from the Apple iTunes Search/lookup API. It addresses key limitations of the standard Appstore by adding platform- and developer filtes and showing information like bundle IDs.
+This is a modern, client-side web application designed to efficiently search, retrieve, and analyze app data from the **Apple iTunes Search/Lookup API**. It addresses key limitations of the standard App Store by adding platform and developer filters and showing valuable metadata like **Bundle IDs**.
 
-✨ Core Functionality
+---
 
-The primary goal of this tool is to provide a unified search experience that reliably includes results from the iOS, macOS, tvOS, and watchOS ecosystems.
+## ✨ Core Functionality
 
-1. Robust Data Retrieval (Multisearch)
+The primary goal of this tool is to provide a **unified search experience** that reliably includes results from the iOS, macOS, tvOS, and watchOS ecosystems.
 
-The application implements a parallel multisearch strategy in main.js:
+### 1. Robust Data Retrieval (Multisearch)
 
-When a user submits a query, the application sends multiple simultaneous API requests using different entity parameters (entity=software, entity=macSoftware, etc.).
+The application implements a **parallel multisearch strategy** in `main.js`:
 
-All responses are collected, combined, and filtered before being presented to the user.
+* When a user submits a query, the application sends **multiple simultaneous API requests** using different entity parameters (e.g., `entity=software`, `entity=macSoftware`).
+* All responses are collected, combined, and filtered before being presented to the user.
 
-2. Specialized Filtering and Sorting
+### 2. Specialized Filtering and Sorting
 
 The tool incorporates specific logic to normalize and organize the retrieved data:
 
-Accurate Platform Identification: The filter.js module contains logic (getPlatforms) that analyzes multiple fields (kind, supportedDevices...) within the API response to determine all supported platforms (e.g., distinguishing between iOS and dedicated watchOS apps).
+* **Accurate Platform Identification:** The `filter.js` module contains logic (`getPlatforms`) that analyzes multiple fields (`kind`, `supportedDevices`, etc.) within the API response to accurately determine all supported platforms (e.g., distinguishing between iOS and dedicated watchOS apps).
+* **Relevance Sorting:** Search results are organized using a **tiered algorithm** to prioritize the most relevant apps:
+    * Exact name matches.
+    * Names starting with the search term.
+    * Names containing the search term.
+    * Highest user rating count (popularity).
+    * Fallback: sort alphabetically.
+* **Platform Filtering:** Users can refine the displayed list using a filter dropdown to show only apps available on a selected platform (e.g., only "tvOS" and "macOS" apps).
 
-Relevance Sorting: Search results are organized using a tiered algorithm to prioritize the most relevant apps:
+---
 
-Exact name matches.
+## 🛠️ Project Architecture
 
-Names starting with the search term.
+The application is built with a clean, **modular structure**, separating responsibilities into three distinct JavaScript files:
 
-Names containing the search term.
+| Module | Responsibility | Description |
+| :--- | :--- | :--- |
+| `main.js` | Core Control & API | Manages user input (`debounce`), executes the Multisearch API calls, handles result combination, and orchestrates data flow. |
+| `ui.js` | User Interface Rendering | Handles the dynamic rendering of search suggestions and the final app list display. It integrates the platform icons and manages visual feedback. |
+| `filter.js` | Data Logic & Cleanup | Contains all proprietary algorithms for data manipulation, including the `getPlatforms` logic and the advanced `sortAppsByRelevance` function. |
 
-Highest user rating count (popularity).
+---
 
-Fallback: sort alphabetically
+## 🛡️ Implementation Safeguards
 
-Platform Filtering: Users can refine the displayed list using a filter dropdown to show only apps available on a selected platform (e.g., only "tvOS" and "macOS" apps).
-
-🛠️ Project Architecture
-
-The application adheres to a clean, modular structure, dividing responsibilities into three distinct JavaScript files:
-
-Module
-
-Responsibility
-
-Description
-
-main.js
-
-Core Control & API
-
-Manages user input (debounce), executes the Multisearch API calls, handles result combination, and orchestrates data flow between the other modules.
-
-ui.js
-
-User Interface Rendering
-
-Handles the dynamic rendering of search suggestions and the final app list display. It integrates the platform icons and manages the visual feedback and error messages.
-
-filter.js
-
-Data Logic & Cleanup
-
-Contains algorithms for data manipulation, including the getPlatforms logic and the advanced sortAppsByRelevance function.
-
-🛡️ Implementation Safeguards
-
-All information (like favorites or last searched) are stored in localstorage on the client.
+* **Local Persistence:** All user-specific information (like favorites or last searched terms) are stored in **`localStorage`** on the client.
+* **Result Filtering:** All non-app objects (e.g., songs, movies) are **explicitly filtered out** using the `wrapperType` field before the results are processed.

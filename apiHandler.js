@@ -2,7 +2,7 @@
  * Gibt Infos zu einer spezifischen App zurück, die über die iTunes lookup API geholt werden.
  * @param {*} appID App ID der gesuchten App
  */
-export function appIdLookup(appID) {
+export function iTunesLookupAPI(appID) {
   return new Promise((resolve, reject) => {
     //Rückgabe der Daten oder eines Fehlers vorbereiten
     const url = "https://itunes.apple.com/lookup"; //API URL

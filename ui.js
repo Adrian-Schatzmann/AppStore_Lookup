@@ -102,7 +102,7 @@ export function populateSuggestions(
   if (!results || results.length === 0) return;
 
   //Max 20 Vorschläge anzeigen
-  results.slice(0, 20).forEach((item) => {
+  results.slice(0, 50).forEach((item) => {
     let $itemButton;
     let valueToInsert;
 

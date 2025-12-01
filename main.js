@@ -95,7 +95,7 @@ async function getProcessedApps(input) {
   } else if (selectedSearchMode === "id") {
     try {
       //Ajax Abfrage mit Error Handling
-      const apiResponse = await apiHandler.appIdLookup(input); //Ajax Abfrage starten und bei Erfolg Erebnis speichern
+      const apiResponse = await apiHandler.iTunesLookupAPI(input); //Ajax Abfrage starten und bei Erfolg Erebnis speichern
       const apps = apiResponse.results; //Umwandlung zu normalem Array für einfachere Handhabung
       return apps;
     } catch (error) {

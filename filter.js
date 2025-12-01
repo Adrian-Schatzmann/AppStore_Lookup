@@ -94,7 +94,7 @@ export function filterPlatform(apps) {
   //Keine Filterung bei entsprechender Eingabe. Die restliche Funktion wird übersprungen.
   if (selectedPlatforms.length === 0 || selectedPlatforms.length === 5) {
     console.log("Keine Platformsuche");
-
+    return apps;
   }
 
   //Schleife durch alle Apps

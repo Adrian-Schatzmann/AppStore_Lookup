@@ -48,7 +48,6 @@ export function iTunesSearchAPI(term, platform, attribute, limit) {
       media = "software";
     }
     const country = "CH"; //Schweizer AppStore
-    const maxResults = 50;
 
     $.ajax({
       url: "https://itunes.apple.com/search",
@@ -61,37 +60,6 @@ export function iTunesSearchAPI(term, platform, attribute, limit) {
         media: media,
         attribute: attribute,
         limit: limit,
-      },
-      success: function (data) {
-        resolve(data); //Bei Erfolg Daten zurückgeben
-      },
-      error: function () {
-        //Error handling
-        reject(new Error("Fehler: Timeout oder ungültige Anfrage."));
-      },
-    });
-  });
-}
-
-/**
- * Gibt ein Array mit Entwicklernamen zurück. Duplikate sind bereits entfernt.
- * @param {*} term Suchbegriff für den Entwickler (sollte so genau wie möglich dem Entwicklernamen entsprechen)
- */
-export function developerSearch(term) {
-  return new Promise((resolve, reject) => {
-    const media = "software"; //softwareinfos erhalten, keine Filme, Musik etc.
-    const maxResults = 20;
-
-    $.ajax({
-      url: "https://itunes.apple.com/search",
-      dataType: "jsonp", //JSONP statt XHR weil XHR ein CORS-Problem verursacht bei der iTunes API
-      cache: true, //Verhindert den "&_=timestamp" Parameter. Dieser macht Probleme beim Anwenden der eigenen Parameter.
-      data: {
-        //Parameter mitgeben
-        term: term,
-        media: media,
-        attribute: "softwareDeveloper",
-        limit: maxResults,
       },
       success: function (data) {
         resolve(data); //Bei Erfolg Daten zurückgeben

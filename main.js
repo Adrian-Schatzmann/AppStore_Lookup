@@ -14,9 +14,6 @@ const developerSuggestions = $("#developerSuggestions");
 const searchTermInput = $("#searchTermInput");
 const softwareSuggestions = $("#softwareSuggestions");
 
-//------------------------
-//Output
-//------------------------
 /**
  * Event Listener für den Such-Button. Startet die App Abfrage und Ergebnisfilter.
  */
@@ -92,10 +89,8 @@ async function getProcessedApps(input) {
       } catch (error) {
         console.error("Fehler bei der iTunes API-Ajax Abfrage:", error.message); //Error handling
       }
-
-      return combineResults(searchPromises);
     }
-
+    return combineResults(searchPromises);
     //---------Suche nach ID.---------
   } else if (selectedSearchMode === "id") {
     try {
@@ -217,6 +212,7 @@ searchTermInput.on(
     try {
       //Ajax Abfrage
       const combinedResults = await getProcessedApps(searchTermInput.val());
+      console.log("reached here", combineResults);
       //Resultate dem User anzeigen
       ui.populateSuggestions(
         softwareSuggestions,

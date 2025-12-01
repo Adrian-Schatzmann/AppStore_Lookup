@@ -33,8 +33,10 @@ export function appIdLookup(appID) {
  * Gibt die wahrscheinlichsten Ergebnisse für den angegebenen Suchbegriff zurück.
  * @param {*} term Suchbegriff für die Software
  * @param {*} platform "desktop" für macOS Apps, "mobile" für alles andere. Standard ist "all".
+ * @param {*} attribute "softwareDeveloper" für Entwickleruche, "" für Software.
+ * @param {*} limit Maximale Anzahl Ergebnisse (int)
  */
-export function softwareSearch(term, platform) {
+export function iTunesSearchAPI(term, platform, attribute, limit) {
   //Rückgabe der Daten oder eines Fehlers vorbereiten
   return new Promise((resolve, reject) => {
 
@@ -57,7 +59,8 @@ export function softwareSearch(term, platform) {
         term: term,
         country: country,
         media: media,
-        limit: maxResults,
+        attribute: attribute,
+        limit: limit,
       },
       success: function (data) {
         resolve(data); //Bei Erfolg Daten zurückgeben
@@ -76,8 +79,7 @@ export function softwareSearch(term, platform) {
  */
 export function developerSearch(term) {
   return new Promise((resolve, reject) => {
-    const media = "software";
-    const entity = "software"; //softwareinfos erhalten, keine Filme, Musik etc.
+    const media = "software"; //softwareinfos erhalten, keine Filme, Musik etc.
     const maxResults = 20;
 
     $.ajax({
@@ -88,7 +90,6 @@ export function developerSearch(term) {
         //Parameter mitgeben
         term: term,
         media: media,
-        entity: entity,
         attribute: "softwareDeveloper",
         limit: maxResults,
       },

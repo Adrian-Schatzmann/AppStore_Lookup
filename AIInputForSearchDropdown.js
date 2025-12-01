@@ -53,7 +53,7 @@ async function getProcessedApps(term, searchMode) {
     let macApps = [];
     if (selectedPlatforms.length === 0 || selectedPlatforms.some((p) => p === "macos")) {
        try {
-          const res = await apiHandler.softwareSearch(term, "desktop"); // desktop = macSoftware entity
+          const res = await apiHandler.iTunesSearchAPI(term, "desktop"); // desktop = macSoftware entity
           macApps = res.results || [];
        } catch(e) { console.error(e); }
     }
@@ -62,7 +62,7 @@ async function getProcessedApps(term, searchMode) {
     let mobileApps = [];
     if (!isOnlyMacSelected) {
        try {
-          const res = await apiHandler.softwareSearch(term, "mobile"); // mobile = software entity
+          const res = await apiHandler.iTunesSearchAPI(term, "mobile"); // mobile = software entity
           mobileApps = res.results || [];
        } catch(e) { console.error(e); }
     }

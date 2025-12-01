@@ -50,7 +50,7 @@ export function getPlatforms(app) {
  * @returns Nach Entwickler gefiltertes apps Array
  */
 export function filterDeveloper(apps) {
-  const selectedDeveloper = document.getElementById("developerInput").value; //Gewählten Entwickler holen
+  const selectedDeveloper = $("#developerInput").val(); //Gewählten Entwickler holen
   let filteredApps = [];
   //Funktion überspringen wenn kein Entwickler angegeben wurde. Weigergeben an nächsten Filterschritt
   if (!selectedDeveloper) {

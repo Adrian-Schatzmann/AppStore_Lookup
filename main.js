@@ -8,12 +8,11 @@ import * as filter from "./filter.js";
 //------------------------
 //DOM Referenzen
 //------------------------
-const lookupButton = document.getElementById("lookupButton");
-//Referenzen für das Entwickler-Feature
+const searchButton = $("#searchButton");
 const developerInput = $("#developerInput");
-const developerSuggestions = document.getElementById("developerSuggestions");
-const lookupInput = $("#lookupValue");
-const suggestionsMenu = document.getElementById("suggestions");
+const developerSuggestions = $("#developerSuggestions");
+const searchTermInput = $("#searchTermInput");
+const softwareSuggestions = $("#softwareSuggestions");
 
 //------------------------
 //Output
@@ -71,55 +70,32 @@ function displayApp(apps) {
       </div>
     `);
 }
-/*
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-*/
 /**
- * Event Listener für den Such-Button. Startet die App Abfrage und Ergebnisfilter. 
+ * Event Listener für den Such-Button. Startet die App Abfrage und Ergebnisfilter.
  */
-lookupButton.addEventListener("click", async function (e) {
+searchButton.on("click", async function (e) {
   e.preventDefault(); //verhindet das Neuladen der Seite beim Absenden vom Formular
-  const apps = await getProcessedApps();
-  console.log("wir sind beim lookupButton-Eventlistener. " + apps);
+  const input = searchTermInput.val(); //Suchbegriff vom User holen
+  const apps = await getProcessedApps(input);
+  console.log("wir sind beim searchButton-Eventlistener. " + apps); //debug
   //Steuerung für weiteren Ablauf
   const appliedDevFilter = filter.filterDeveloper(apps); //Entwicklerfilter anwenden
   const appliedPlatformFilter = filter.filterPlatform(appliedDevFilter); //Platformfilter anwenden
   displayApp(appliedPlatformFilter);
 });
-/*
 
-
-*/
 //------------------------
-//Main-Ablauf
+//Hauptfunktionen
 //------------------------
 /**
  * Handelt ajax requests anhand von Usereingaben. Kombiniert wenn nötig macOS und mobile Abfragen.
+ * @param {*} input Suchbegriff
  * @returns Array mit den Apps aus der iTunes api.
  */
-async function getProcessedApps() {
-  const selectedSearchMode = document.getElementById("lookupType").value; //Aktuell gewählten Modus holen
-  const input = document.getElementById("lookupValue").value; //Suchbegriff vom User holen
+async function getProcessedApps(input) {
+  const selectedSearchMode = $("#searchMode").val(); //Aktuell gewählten Modus holen
   const searchPromises = []; //Dynamische Promises-Liste
-  let combinedResults = [];
 
   //---------Suche nach String---------
   if (selectedSearchMode === "name") {
@@ -142,10 +118,7 @@ async function getProcessedApps() {
       try {
         //Ajax Abfrage spezifisch für macOS starten und in searchPromises speichern. Await kommt später.
         searchPromises.push(
-          apiHandler.softwareSearch(
-            input,
-            "desktop" /*, Parameter für Mobile */
-          )
+          apiHandler.iTunesSearchAPI(input, "desktop", "", 25)
         );
       } catch (error) {
         //Error handling
@@ -167,28 +140,14 @@ async function getProcessedApps() {
       console.log("mobile Ajax Abfrage startet"); //debug
       try {
         //Ajax Abfrage, in searchPromises speichern. Await kommt später.
-        searchPromises.push(apiHandler.softwareSearch(input, "mobile"));
+        searchPromises.push(
+          apiHandler.iTunesSearchAPI(input, "mobile", "", 25)
+        );
       } catch (error) {
         console.error("Fehler bei der iTunes API-Ajax Abfrage:", error.message); //Error handling
       }
-    }
 
-    //beide cases zusammenführen
-    //Auf alle (1 oder 2) Ergebnisse warten. Promise.all wartet auf alle Promises im Array, egal wie viele es sind.
-    try {
-      const allResponses = await Promise.all(searchPromises);
-
-      //Iterieren über alle erhaltenen Responses
-      for (const response of allResponses) {
-        //Kombinieren mit Umwandlung zu normalem Array für einfachere Handhabung
-        combinedResults.push(...(response.results || []));
-      }
-
-      return combinedResults;
-    } catch (error) {
-      //Error handling wenn mindestens eine der Anfragen fehlschlägt
-      console.error("Fehler bei der kombinierten Suche:", error);
-      return []; //Leeres Array zurückgeben, damit die UI nicht crasht
+      return combineResults(searchPromises);
     }
 
     //---------Suche nach ID.---------
@@ -207,93 +166,32 @@ async function getProcessedApps() {
   }
 }
 
-/*
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//------------------------
-//Entwickler-Autocomplete Feature
-//------------------------
-
-
 /**
- * Generische Funktion zur Befüllung eines beliebigen Dropdown-Menüs mit Vorschlägen.
- * @param {HTMLElement} suggestionsContainer Der DOM-Container für die Vorschläge (z.B. suggestionsMenu).
- * @param {Array} results Das Array von Objekten, die die API zurückgibt (z.B. app- oder developer-Objekte).
- * @param {string} keyProperty Die Eigenschaft des Objekts, die als Text angezeigt werden soll (z.B. 'artistName' oder 'trackName').
+ * Kobiniert die Resultate mehrerer Ajax Abfragen
+ * @param {*} searchPromises Array mit promises aus Ajax Abfragen
+ * @returns Kombiniertes Array
  */
-/*
-function populateSuggestions(suggestionsContainer, results, keyProperty) {
-  // Container leeren und standardmäßig ausblenden
-  suggestionsContainer.textContent = "";
-  suggestionsContainer.classList.remove("show");
+async function combineResults(searchPromises) {
+  //beide cases zusammenführen
+  //Auf alle (1 oder 2) Ergebnisse warten. Promise.all wartet auf alle Promises im Array, egal wie viele es sind.
+  let combinedResults = [];
 
- if (!results || results.length === 0) {
-    return;
+  try {
+    const allResponses = await Promise.all(searchPromises);
+
+    //Iterieren über alle erhaltenen Responses
+    for (const response of allResponses) {
+      //Kombinieren mit Umwandlung zu normalem Array für einfachere Handhabung
+      combinedResults.push(...(response.results || []));
+    }
+    console.log("test" + combinedResults);
+    return combinedResults;
+  } catch (error) {
+    //Error handling wenn mindestens eine der Anfragen fehlschlägt
+    console.error("Fehler bei der kombinierten Suche:", error);
+    return []; //Leeres Array zurückgeben, damit die UI nicht crasht
   }
-
-
-
-  // Array mit den eindeutigen Werten der angezeigten Eigenschaft
-  const uniqueNames = Array.from(uniqueItemsMap.keys());
-
-
-  //Nur die ersten 10 Vorschläge anzeigen
-  uniqueNames.slice(0, 10).forEach((name) => {
-    const item = document.createElement("button");
-    item.type = "button";
-    item.classList.add("dropdown-item");
-    item.textContent = name;
-
-    //Klick-Handler für Auswahl
-    item.addEventListener("click", () => {
-      const test = [name]
-      displayApp(test);
-      suggestionsContainer.classList.remove("show"); //Dropdown schließen
-      suggestionsContainer.textContent = "";
-    });
-
-    suggestionsContainer.appendChild(item);
-  });
-
-  // Dropdown anzeigen
-  suggestionsContainer.classList.add("show");
 }
-*/
-
-/**
- * Schließt alle Autocomplete-Dropdowns, wenn man außerhalb klickt.
- */
-/*
-document.addEventListener("click", function (e) {
-  if (
-    !developerInput.contains(e.target) &&
-    !developerSuggestions.contains(e.target) &&
-    !lookupInput.contains(e.target) &&
-    !suggestionsMenu.contains(e.target)
-  ) {
-    developerSuggestions.classList.remove("show");
-    suggestionsMenu.classList.remove("show");
-  }
-});
-*/
 
 /**
  * Debounce Timer für Funktionen, in denen auf Usereingaben gewartet werden soll.
@@ -302,29 +200,87 @@ document.addEventListener("click", function (e) {
  */
 function debounce(fn, delay) {
   let timer;
-  return function(...args) {
+
+  return function (...args) {
     clearTimeout(timer);
     timer = setTimeout(() => fn.apply(this, args), delay);
   };
 }
 
-
-
-
 /**
  * Event Listener für das Entwickler-Eingabefeld
  */
-developerInput.on("input", debounce(function () {
-  console.log(developerInput.val());
-});
-
+developerInput.on(
+  "input",
+  debounce(async function () {
+    const searchPromises = []; //Dynamische Promises-Liste
+    console.log(developerInput.val());
+    console.log("Entwicklerabfrage startet"); //debug
+    try {
+      //Ajax Abfrage
+      searchPromises.push(
+        apiHandler.iTunesSearchAPI(
+          developerInput.val(),
+          "desktop",
+          "softwareDeveloper",
+          10
+        )
+      );
+      searchPromises.push(
+        apiHandler.iTunesSearchAPI(
+          developerInput.val(),
+          "mobile",
+          "softwareDeveloper",
+          10
+        )
+      );
+      //Beide cases zusammenführen
+      const combinedResults = await combineResults(searchPromises);
+      //Duplikate entfernen
+      const uniqueDeveloperNames = [
+        ...new Set(
+          combinedResults
+            .map((app) => app.artistName) // 1. Nur den Entwicklernamen extrahieren
+            .filter((name) => name) // 2. Leere oder undefined Werte entfernen
+        ),
+      ];
+      ui.populateSuggestions(
+        developerSuggestions,
+        uniqueDeveloperNames,
+        developerInput
+      );
+      console.log("test2", uniqueDeveloperNames); //debug
+    } catch (error) {
+      //Error handling
+      console.error("Fehler bei der kombinierten Entwicklersuche:", error);
+      return []; //Leeres Array zurückgeben, damit die UI nicht crasht
+    }
+  }, 300)
+);
 
 /**
  * Event Listener für das App-Namen-Eingabefeld
  */
-lookupInput.on("input", debounce(function () {
-  console.log(lookupInput.val());
-}, 300));
-
-
-
+searchTermInput.on(
+  "input",
+  debounce(async function () {
+    //Überspringen, wenn Suchmodus ID ist.
+    if ($("#searchMode").val() === "id") {
+      return;
+    }
+    try {
+      //Ajax Abfrage
+      const combinedResults = await getProcessedApps(searchTermInput.val());
+      //Resultate dem User anzeigen
+      ui.populateSuggestions(
+        softwareSuggestions,
+        combinedResults,
+        searchTermInput
+      );
+    } catch (error) {
+      //Error handling
+      console.error("Fehler bei der Softwaresuche:", error);
+      return []; //Leeres Array zurückgeben, damit die UI nicht crasht
+    }
+  }, 300)
+);

@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AppStore Lookup</title>
+    <title>AppStore Search</title>
     <link rel="icon" type="image/x-icon" href="/media/favicon.ico" />
 
     <!-- Bootstrap CSS -->
@@ -15,17 +15,17 @@
 
   <body class="bg-light">
     <div class="container py-4">
-      <h1 class="mb-4">AppStore Lookup</h1>
+      <h1 class="mb-4">AppStore Search</h1>
 
-      <!-- Lookup Card -->
+      <!-- Search Card -->
       <div class="card p-4 shadow-sm mb-4">
         <form>
-          <!-- Lookup Type -->
+          <!-- Search Type -->
           <div class="mb-3">
-            <label for="lookupType" class="form-label">Search Mode</label>
-            <select id="lookupType" class="form-select">
+            <label for="searchMode" class="form-label">Search Mode</label>
+            <select id="searchMode" class="form-select">
               <option value="name">App Name</option>
-              <option id="lookupTypeId" value="id">App Store ID</option>
+              <option id="searchMode" value="id">App Store ID</option>
             </select>
           </div>
 
@@ -113,23 +113,23 @@
           </div>
           <br />
 
-          <!-- Lookup Input with Dropdown -->
+          <!-- Search Input with Dropdown -->
           <div class="mb-3 dropdown">
-            <label for="lookupValue" class="form-label">Search Term</label>
+            <label for="searchTermInput" class="form-label">Search Term</label>
             <input
               type="text"
-              id="lookupValue"
+              id="searchTermInput"
               class="form-control"
               autocomplete="off"
               placeholder="Enter App Name or ID"
               data-bs-toggle="dropdown"
             />
-            <div id="suggestions" class="dropdown-menu w-100"></div>
+            <div id="softwareSuggestions" class="dropdown-menu w-100"></div>
           </div>
 
           <!-- Action Buttons -->
           <div class="d-flex gap-2">
-            <button id="lookupButton" class="btn btn-primary flex-grow-1">
+            <button id="searchButton" class="btn btn-primary flex-grow-1">
               Search
             </button>
             <button

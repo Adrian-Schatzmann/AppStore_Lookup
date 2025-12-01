@@ -158,6 +158,12 @@ export function populateSuggestions(
 
       //Dropdown schließen
       $(suggestionsContainer).removeClass("show").empty();
+
+      //Bei Klick auf das Dropdown Element, die Daten direkt anzeigen lassen.
+      if (typeof item === "object" && item !== null) {
+        let i = [item];
+        displayApp(i);
+      }
     });
 
     //Ins DOM hängen
@@ -167,7 +173,6 @@ export function populateSuggestions(
   //Anzeigen
   $(suggestionsContainer).addClass("show");
 }
-
 
 /**
  * Schreibt Infos zur ersten App aus aus dem Results Objekt in den DOM

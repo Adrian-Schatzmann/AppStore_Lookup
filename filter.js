@@ -1,0 +1,153 @@
+//------------------------
+//Resultatfilter
+//------------------------
+
+/**
+ * Bestimmt die Plattform einer App aus iTunes Search API Berücksichtigt sowohl supportedDevices als auch die Entity
+ * @param {*} app App-Objekt aus iTunes API
+ * @returns As Array: Plattform: "iOS", "iPadOS", "Mac", "tvOS", "watchOS"
+ */
+export function getPlatforms(app) {
+  const entity = (app.entity || "").toLowerCase();
+  const kind = (app.kind || "").toLowerCase(); //Edgecase handling wegen inkonsistenten API Ergebnissen
+  //supported ist ein Array von Gerätenamen aus supportedDevices der API (iPadAir2, iPhone12 etc.)
+  const supported = app.supportedDevices || [];
+  let platformList = [];
+  //.some(...) prüft, ob mindestens ein Eintrag die Bedingung erfüllt
+  //d.toLowerCase().includes("iphone") → wandelt den Gerätenamen in Kleinbuchstaben und prüft, ob "iphone" darin vorkommt.
+  //Ergebnis jeweils true, wenn mindestens ein Eintrag gefunden wurde
+  if (supported.some((d) => d.toLowerCase().includes("iphone"))) {
+    platformList.push("iOS");
+  }
+  if (supported.some((d) => d.toLowerCase().includes("ipad"))) {
+    platformList.push("iPadOS");
+  }
+  if (
+    supported.some((d) => d.toLowerCase().includes("mac")) ||
+    kind === "mac-software"
+  ) {
+    //kind mac-software wegen edgecase für z.B. iMovie
+    platformList.push("macOS");
+  }
+  if (
+    supported.some((d) => d.toLowerCase().includes("appletv")) ||
+    kind === "tv-app" ||
+    (app.appletvScreenshotUrls && app.appletvScreenshotUrls.length > 0) ||
+    (app.tvosScreenshotUrls && app.tvosScreenshotUrls.length > 0)
+  ) {
+    platformList.push("tv");
+  }
+  if (supported.some((d) => d.toLowerCase().includes("watch"))) {
+    platformList.push("watchOS");
+  }
+  return platformList;
+}
+
+/**
+ * Filtert das Resultat nach dem angegebenen Entwickler
+ * @param {*} apps apps Array mit Apps
+ * @returns Nach Entwickler gefiltertes apps Array
+ */
+export function filterDeveloper(apps) {
+  const selectedDeveloper = $("#developerInput").val(); //Gewählten Entwickler holen
+  let filteredApps = [];
+  //Funktion überspringen wenn kein Entwickler angegeben wurde. Weigergeben an nächsten Filterschritt
+  if (!selectedDeveloper) {
+    console.log("Keine Entwicklersuche"); //debug
+    return apps;
+  }
+
+  for (const app of apps) {
+    if (app.sellerName === selectedDeveloper) {
+      filteredApps.push(app);
+    }
+  }
+  console.log("Nach Entwickler gefilterte Apps: " + filteredApps.length); //Debug
+  return filteredApps;
+}
+
+/**
+ * Filtert nach vom User ausgewählten Platformen
+ * @param {*} apps Array mit Apps
+ * @returns Nach Platform gefiltertes apps Array
+ */
+export function filterPlatform(apps) {
+  //Benutzerauswahl für Platform holen und in ein Array umwandeln
+  const selectedPlatforms = $(
+    ".platform-dropdown input[type='checkbox']:checked"
+  )
+    .map(function () {
+      return $(this).val();
+    })
+    .get();
+  let filteredApps = [];
+
+  //Keine Filterung bei entsprechender Eingabe. Die restliche Funktion wird übersprungen.
+  if (selectedPlatforms.length === 0 || selectedPlatforms.length === 5) {
+    console.log("Keine Platformsuche");
+    return apps;
+  }
+
+  //Schleife durch alle Apps
+  for (const app of apps) {
+    //erhalte ein Array mit den kompatiblen Platformen
+    const appPlatforms = getPlatforms(app);
+
+    //Gibt es irgendeine (some) ausgewählte Plattform, die in den App-Plattformen enthalten (includes) ist?
+    if (selectedPlatforms.some((selected) => appPlatforms.includes(selected))) {
+      //App zum Output Array hinzufügen
+      filteredApps.push(app);
+    }
+  }
+
+  console.log("Nach Platform gefilterte Apps: " + filteredApps.length); //debug
+  return filteredApps;
+}
+
+/**
+ * Sortiert Objekt mit Apps anhand verschiedenen Kriterien nach Relevanz
+ * @param {*} apps Objekt mit mehreren Apps
+ * @param {*} searchTerm Begriff, nach dem gesucht werden soll
+ * @returns sortiertes array
+ */
+export function sortAppsByRelevance(apps, searchTerm) {
+  const term = searchTerm.toLowerCase();
+
+  return apps.sort((a, b) => {
+    //Wir vergleichen immer zwei Apps (a und b) miteinander
+    const nameA = (a.trackName || "").toLowerCase().trim();;
+    const nameB = (b.trackName || "").toLowerCase().trim();;
+
+    // --- TIER 1: Exakter Match (Der "Killer") ---
+    //Wenn A genau dem Suchbegriff entspricht, gewinnt A sofort (-1).
+    if (nameA === term && nameB !== term) return -1;
+    if (nameB === term && nameA !== term) return 1;
+
+    // --- TIER 2: Beginnt mit Suchbegriff ---
+    const startA = nameA.startsWith(term);
+    const startB = nameB.startsWith(term);
+
+    if (startA && !startB) return -1;
+    if (!startA && startB) return 1;
+
+    // Wenn BEIDE mit dem Begriff starten
+    if (startA && startB) {
+      //Tier 2.1 - Der kürzere Name gewinnt
+      if (nameA.length !== nameB.length) {
+        return nameA.length - nameB.length; // Aufsteigend: Kürzere Strings zuerst
+      }
+    }
+    // --- TIER 3: Popularität (Anzahl Bewertungen als Tie-Breaker) ---
+    //Popularität holen (Anzahl Bewertungen).
+    const popA = a.userRatingCount || 0;
+    const popB = b.userRatingCount || 0;
+
+    if (popA !== popB) {
+      return popB - popA; //Absteigende Sortierung (Höhere Zahl zuerst)
+    }
+
+    // --- TIER 4: Fallback ---
+    //Wenn alles andere gleich ist, sortieren nach Alphabet
+    return nameA.localeCompare(nameB);
+  });
+}

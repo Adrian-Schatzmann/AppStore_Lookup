@@ -36,14 +36,13 @@ The application is built with a clean, **modular structure**, separating respons
 
 | Module | Responsibility | Description |
 | :--- | :--- | :--- |
-| `main.js` | Core Control & API | Manages user input (`debounce`), executes the Multisearch API calls, handles result combination, and orchestrates data flow. |
-| `apiHandler.js` | API Abstraction & Fetching** | **Encapsulates the jQuery AJAX calls to the iTunes API, handling query construction (entity, media, country) and returning Promises. |
+| `main.js` | Core Control & API | Manages user input, executes the Multisearch API calls, handles result combination, and orchestrates data flow. |
+| `apiHandler.js` | API Abstraction & Fetching** | Encapsulates the jQuery AJAX calls to the iTunes API, handling query construction (entity, media, country) and returning Promises. |
 | `ui.js` | User Interface Rendering | Handles the dynamic rendering of search suggestions and the final app list display. It integrates the platform icons and manages visual feedback. |
-| `filter.js` | Data Logic & Cleanup | Contains all proprietary algorithms for data manipulation, including the `getPlatforms` logic and the advanced `sortAppsByRelevance` function. |
+| `filter.js` | Data Logic & Cleanup | Contains all algorithms for data manipulation, including the `getPlatforms` logic and the advanced `sortAppsByRelevance` function. |
 
 ---
 
 ## 🛡️ Implementation Safeguards
 
 * **Local Persistence:** All user-specific information (like favorites or last searched terms) are stored in **`localStorage`** on the client.
-* **Result Filtering:** All non-app objects (e.g., songs, movies) are **explicitly filtered out** using the `wrapperType` field before the results are processed.

@@ -1,0 +1,35 @@
+THIRD-PARTY DEPENDENCIES NOTICE
+
+This project includes the following third-party libraries, each governed by its own license:
+
+1. jQuery
+   License: MIT
+   Source: https://jquery.com/
+   Copyright notice must be preserved if redistributed.
+
+2. DOMPurify
+   License: Apache License 2.0 (Dual-licensed MPL 2.0)
+   Source: https://github.com/cure53/DOMPurify
+   This project elects to use DOMPurify under the terms of the Apache 2.0 License.
+
+3. Bootstrap
+   License: MIT
+   Source: https://getbootstrap.com/
+   Copyright notice must be preserved if redistributed.
+
+-------------------------------------------------------------------------
+
+API USAGE NOTICE
+
+This project interfaces with the Apple iTunes Search API. 
+Usage of this API is subject to Apple’s Terms of Service and policies.
+Data retrieved via this software belongs to Apple and/or the respective app developers.
+This software does not grant any rights to the data retrieved.
+
+For more information, see: 
+https://performance-partners.apple.com/search-api
+
+-------------------------------------------------------------------------
+
+All original code written in this repository is licensed under the MIT License above 
+unless otherwise specified in the third-party licenses.

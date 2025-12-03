@@ -4,6 +4,7 @@
 import * as ui from "./ui.js";
 import * as apiHandler from "./apiHandler.js";
 import * as filter from "./filter.js";
+import * as localStorageHandler from "./localStorageHandler.js";
 
 //------------------------
 //DOM Referenzen
@@ -17,7 +18,8 @@ const softwareSuggestions = $("#softwareSuggestions");
 //------------------------
 //Hauptfunktionen
 //------------------------
-
+loadFavorites();
+ui.initializeUI();
 /**
  * Event Listener für den Such-Button. Startet die App Abfrage und Ergebnisfilter. Wird aller Wahrscheinlichkeit nur im ID-Modus verwendet.
  */
@@ -29,7 +31,10 @@ searchButton.on("click", async function (e) {
   //Steuerung für weiteren Ablauf.
   const appliedDevFilter = filter.filterDeveloper(apps); //Entwicklerfilter anwenden
   const appliedPlatformFilter = filter.filterPlatform(appliedDevFilter); //Platformfilter anwenden
-  const sortedByRelevance = filter.sortAppsByRelevance(appliedPlatformFilter, input);
+  const sortedByRelevance = filter.sortAppsByRelevance(
+    appliedPlatformFilter,
+    input
+  );
   ui.displayApp(appliedPlatformFilter);
 });
 
@@ -215,8 +220,11 @@ searchTermInput.on(
       const combinedResults = await getProcessedApps(searchTermInput.val());
       const appliedDevFilter = filter.filterDeveloper(combinedResults); //Entwicklerfilter anwenden
       const appliedPlatformFilter = filter.filterPlatform(appliedDevFilter); //Platformfilter anwenden
-      const sortedByRelevance = filter.sortAppsByRelevance(appliedPlatformFilter, searchTermInput.val()); //Ergebnisse nach Relevanz sortieren
-     console.log("Fertig gefilterte und sortierte Apps: ", sortedByRelevance);
+      const sortedByRelevance = filter.sortAppsByRelevance(
+        appliedPlatformFilter,
+        searchTermInput.val()
+      ); //Ergebnisse nach Relevanz sortieren
+      console.log("Fertig gefilterte und sortierte Apps: ", sortedByRelevance);
       //Resultate dem User anzeigen
       ui.populateSuggestions(
         softwareSuggestions,
@@ -230,3 +238,24 @@ searchTermInput.on(
     }
   }, 200)
 );
+
+async function loadFavorites() {
+  const searchPromises = []; //Dynamische Promises-Liste
+  let favoriteApps = [];
+  //Bestehendes array holen falls vorhanden
+  const currentArray = localStorageHandler.getFavorites();
+  //iterieren durch alle Favoriten
+  currentArray.forEach((id) => {
+    try {
+      searchPromises.push(apiHandler.iTunesLookupAPI(id)); //ajax Abfragen für alle Favoriten starten
+    } catch (error) {
+      //Error handling
+      console.error("Fehler beim Laden der Favoriten: ", error.message);
+    }
+    //Auf alle Antworten warten und ein "normales" Array erstellen.
+  });
+  favoriteApps = await combineResults(searchPromises);
+  ui.populateFavorites(favoriteApps);
+
+}
+document.addEventListener("reloadFavorites", loadFavorites);

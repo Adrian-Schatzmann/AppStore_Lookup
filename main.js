@@ -16,6 +16,55 @@ const searchTermInput = $("#searchTermInput");
 const softwareSuggestions = $("#softwareSuggestions");
 
 //------------------------
+//Hilfsfunktionen
+//------------------------
+/**
+ * Kobiniert die Resultate mehrerer Ajax Abfragen
+ * @param {*} searchPromises Array mit promises aus Ajax Abfragen
+ * @returns Kombiniertes Array
+ */
+async function combineResults(searchPromises) {
+  //beide cases zusammenführen
+  //Auf alle (1 oder 2) Ergebnisse warten. Promise.all wartet auf alle Promises im Array, egal wie viele es sind.
+  let combinedResults = [];
+
+  try {
+    const allResponses = await Promise.all(searchPromises);
+
+    //Iterieren über alle erhaltenen Responses
+    for (const response of allResponses) {
+      //Kombinieren mit Umwandlung zu normalem Array für einfachere Handhabung
+      combinedResults.push(...(response.results || []));
+    }
+    return combinedResults;
+  } catch (error) {
+    //Error handling wenn mindestens eine der Anfragen fehlschlägt
+    console.error("Fehler bei der kombinierten Suche: ", error);
+    ui.displayError("Fehler bei der kombinierten Suche");
+    return []; //Leeres Array zurückgeben, damit die UI nicht crasht
+  }
+}
+
+/**
+ * Debounce Timer für Funktionen, in denen auf Usereingaben gewartet werden soll.
+ * @param {*} fn Funktion die nach dem Timer ausgeführt wird
+ * @param {*} delay Verzögerung in ms
+ */
+function debounce(fn, delay) {
+  let timer;
+
+  return function (...args) {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn.apply(this, args), delay);
+  };
+}
+
+/**
+ * Neuladen der Favoriten nach einer Änderung
+ */
+document.addEventListener("reloadFavorites", loadFavorites);
+
+//------------------------
 //Hauptfunktionen
 //------------------------
 loadFavorites();
@@ -118,47 +167,6 @@ async function getProcessedApps(input) {
     console.error("Unbekannte Suchmodus Auswahl");
     ui.displayError("Unbekannte Suchmodus Auswahl");
   }
-}
-
-/**
- * Kobiniert die Resultate mehrerer Ajax Abfragen
- * @param {*} searchPromises Array mit promises aus Ajax Abfragen
- * @returns Kombiniertes Array
- */
-async function combineResults(searchPromises) {
-  //beide cases zusammenführen
-  //Auf alle (1 oder 2) Ergebnisse warten. Promise.all wartet auf alle Promises im Array, egal wie viele es sind.
-  let combinedResults = [];
-
-  try {
-    const allResponses = await Promise.all(searchPromises);
-
-    //Iterieren über alle erhaltenen Responses
-    for (const response of allResponses) {
-      //Kombinieren mit Umwandlung zu normalem Array für einfachere Handhabung
-      combinedResults.push(...(response.results || []));
-    }
-    return combinedResults;
-  } catch (error) {
-    //Error handling wenn mindestens eine der Anfragen fehlschlägt
-    console.error("Fehler bei der kombinierten Suche: ", error);
-    ui.displayError("Fehler bei der kombinierten Suche");
-    return []; //Leeres Array zurückgeben, damit die UI nicht crasht
-  }
-}
-
-/**
- * Debounce Timer für Funktionen, in denen auf Usereingaben gewartet werden soll.
- * @param {*} fn Funktion die nach dem Timer ausgeführt wird
- * @param {*} delay Verzögerung in ms
- */
-function debounce(fn, delay) {
-  let timer;
-
-  return function (...args) {
-    clearTimeout(timer);
-    timer = setTimeout(() => fn.apply(this, args), delay);
-  };
 }
 
 /**
@@ -267,4 +275,3 @@ async function loadFavorites() {
   favoriteApps = await combineResults(searchPromises);
   ui.populateFavorites(favoriteApps);
 }
-document.addEventListener("reloadFavorites", loadFavorites);

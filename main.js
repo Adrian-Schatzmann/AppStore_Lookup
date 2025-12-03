@@ -4,6 +4,7 @@
 import * as ui from "./ui.js";
 import * as apiHandler from "./apiHandler.js";
 import * as filter from "./filter.js";
+import * as localStorageHandler from "./localStorageHandler.js";
 
 //------------------------
 //DOM Referenzen
@@ -15,9 +16,59 @@ const searchTermInput = $("#searchTermInput");
 const softwareSuggestions = $("#softwareSuggestions");
 
 //------------------------
+//Hilfsfunktionen
+//------------------------
+/**
+ * Kobiniert die Resultate mehrerer Ajax Abfragen
+ * @param {*} searchPromises Array mit promises aus Ajax Abfragen
+ * @returns Kombiniertes Array
+ */
+async function combineResults(searchPromises) {
+  //beide cases zusammenführen
+  //Auf alle (1 oder 2) Ergebnisse warten. Promise.all wartet auf alle Promises im Array, egal wie viele es sind.
+  let combinedResults = [];
+
+  try {
+    const allResponses = await Promise.all(searchPromises);
+
+    //Iterieren über alle erhaltenen Responses
+    for (const response of allResponses) {
+      //Kombinieren mit Umwandlung zu normalem Array für einfachere Handhabung
+      combinedResults.push(...(response.results || []));
+    }
+    return combinedResults;
+  } catch (error) {
+    //Error handling wenn mindestens eine der Anfragen fehlschlägt
+    console.error("Fehler bei der kombinierten Suche: ", error);
+    ui.displayError("Fehler bei der kombinierten Suche");
+    return []; //Leeres Array zurückgeben, damit die UI nicht crasht
+  }
+}
+
+/**
+ * Debounce Timer für Funktionen, in denen auf Usereingaben gewartet werden soll.
+ * @param {*} fn Funktion die nach dem Timer ausgeführt wird
+ * @param {*} delay Verzögerung in ms
+ */
+function debounce(fn, delay) {
+  let timer;
+
+  return function (...args) {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn.apply(this, args), delay);
+  };
+}
+
+/**
+ * Neuladen der Favoriten nach einer Änderung
+ */
+document.addEventListener("reloadFavorites", loadFavorites);
+
+//------------------------
 //Hauptfunktionen
 //------------------------
-
+loadFavorites();
+ui.initializeUI();
 /**
  * Event Listener für den Such-Button. Startet die App Abfrage und Ergebnisfilter. Wird aller Wahrscheinlichkeit nur im ID-Modus verwendet.
  */
@@ -29,7 +80,10 @@ searchButton.on("click", async function (e) {
   //Steuerung für weiteren Ablauf.
   const appliedDevFilter = filter.filterDeveloper(apps); //Entwicklerfilter anwenden
   const appliedPlatformFilter = filter.filterPlatform(appliedDevFilter); //Platformfilter anwenden
-  const sortedByRelevance = filter.sortAppsByRelevance(appliedPlatformFilter, input);
+  const sortedByRelevance = filter.sortAppsByRelevance(
+    appliedPlatformFilter,
+    input
+  );
   ui.displayApp(appliedPlatformFilter);
 });
 
@@ -71,6 +125,9 @@ async function getProcessedApps(input) {
           "Fehler bei der macOS-spezifischen iTunes API-Ajax Abfrage:",
           error.message
         );
+        ui.displayError(
+          "Fehler bei der macOS-spezifischen iTunes API-Ajax Abfrage"
+        );
       }
     }
 
@@ -90,6 +147,7 @@ async function getProcessedApps(input) {
         );
       } catch (error) {
         console.error("Fehler bei der iTunes API-Ajax Abfrage:", error.message); //Error handling
+        ui.displayError("Fehler bei der iTunes API-Ajax Abfrage");
       }
     }
     return combineResults(searchPromises);
@@ -102,51 +160,13 @@ async function getProcessedApps(input) {
       return apps;
     } catch (error) {
       console.error("Fehler bei der iTunes API-Ajax Abfrage:", error.message); //Error handling
+      ui.displayError("Fehler bei der iTunes API-Ajax Abfrage");
     }
   } else {
     //Error bei der Auswahl vom Suchmodus
     console.error("Unbekannte Suchmodus Auswahl");
+    ui.displayError("Unbekannte Suchmodus Auswahl");
   }
-}
-
-/**
- * Kobiniert die Resultate mehrerer Ajax Abfragen
- * @param {*} searchPromises Array mit promises aus Ajax Abfragen
- * @returns Kombiniertes Array
- */
-async function combineResults(searchPromises) {
-  //beide cases zusammenführen
-  //Auf alle (1 oder 2) Ergebnisse warten. Promise.all wartet auf alle Promises im Array, egal wie viele es sind.
-  let combinedResults = [];
-
-  try {
-    const allResponses = await Promise.all(searchPromises);
-
-    //Iterieren über alle erhaltenen Responses
-    for (const response of allResponses) {
-      //Kombinieren mit Umwandlung zu normalem Array für einfachere Handhabung
-      combinedResults.push(...(response.results || []));
-    }
-    return combinedResults;
-  } catch (error) {
-    //Error handling wenn mindestens eine der Anfragen fehlschlägt
-    console.error("Fehler bei der kombinierten Suche:", error);
-    return []; //Leeres Array zurückgeben, damit die UI nicht crasht
-  }
-}
-
-/**
- * Debounce Timer für Funktionen, in denen auf Usereingaben gewartet werden soll.
- * @param {*} fn Funktion die nach dem Timer ausgeführt wird
- * @param {*} delay Verzögerung in ms
- */
-function debounce(fn, delay) {
-  let timer;
-
-  return function (...args) {
-    clearTimeout(timer);
-    timer = setTimeout(() => fn.apply(this, args), delay);
-  };
 }
 
 /**
@@ -194,7 +214,8 @@ developerInput.on(
       console.log("test2", uniqueDeveloperNames); //debug
     } catch (error) {
       //Error handling
-      console.error("Fehler bei der kombinierten Entwicklersuche:", error);
+      console.error("Fehler bei der kombinierten Entwicklersuche: ", error);
+      ui.displayError("Fehler bei der kombinierten Entwicklersuche");
       return []; //Leeres Array zurückgeben, damit die UI nicht crasht
     }
   }, 200)
@@ -215,8 +236,11 @@ searchTermInput.on(
       const combinedResults = await getProcessedApps(searchTermInput.val());
       const appliedDevFilter = filter.filterDeveloper(combinedResults); //Entwicklerfilter anwenden
       const appliedPlatformFilter = filter.filterPlatform(appliedDevFilter); //Platformfilter anwenden
-      const sortedByRelevance = filter.sortAppsByRelevance(appliedPlatformFilter, searchTermInput.val()); //Ergebnisse nach Relevanz sortieren
-     console.log("Fertig gefilterte und sortierte Apps: ", sortedByRelevance);
+      const sortedByRelevance = filter.sortAppsByRelevance(
+        appliedPlatformFilter,
+        searchTermInput.val()
+      ); //Ergebnisse nach Relevanz sortieren
+      console.log("Fertig gefilterte und sortierte Apps: ", sortedByRelevance);
       //Resultate dem User anzeigen
       ui.populateSuggestions(
         softwareSuggestions,
@@ -225,8 +249,29 @@ searchTermInput.on(
       );
     } catch (error) {
       //Error handling
-      console.error("Fehler bei der Softwaresuche:", error);
+      console.error("Fehler bei der Softwaresuche: ", error);
+      ui.displayError("Fehler bei der Softwaresuche");
       return []; //Leeres Array zurückgeben, damit die UI nicht crasht
     }
   }, 200)
 );
+
+async function loadFavorites() {
+  const searchPromises = []; //Dynamische Promises-Liste
+  let favoriteApps = [];
+  //Bestehendes array holen falls vorhanden
+  const currentArray = localStorageHandler.getFavorites();
+  //iterieren durch alle Favoriten
+  currentArray.forEach((id) => {
+    try {
+      searchPromises.push(apiHandler.iTunesLookupAPI(id)); //ajax Abfragen für alle Favoriten starten
+    } catch (error) {
+      //Error handling
+      console.error("Fehler beim Laden der Favoriten: ", error.message);
+      ui.displayError("Fehler beim Laden der Favoriten.");
+    }
+    //Auf alle Antworten warten und ein "normales" Array erstellen.
+  });
+  favoriteApps = await combineResults(searchPromises);
+  ui.populateFavorites(favoriteApps);
+}

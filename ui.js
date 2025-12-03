@@ -94,6 +94,16 @@ export function initializeUI() {
   });
 }
 
+/**
+ * Expandiert den Beschreibungstext einer App bei Klick auf show more.
+ */
+$(document).on("click", ".expand-btn", function () {
+  const parent = $(this).closest("p");
+  parent.find(".short-text").hide();
+  parent.find(".full-text").show();
+  $(this).remove();
+});
+
 //------------------------
 //Hauptfunktionen
 //------------------------
@@ -243,6 +253,7 @@ export function displayApp(apps) {
   const appStoreUrl = DOMPurify.sanitize(app.trackViewUrl || "#");
 
   //Daten in den DOM schreiben in das Objekt mit der ID result.
+  $("#result").removeClass("text-center text-muted");
   $("#result").html(`
       <div class="d-flex align-items-start mb-3">
         <img src="${img}" class="rounded me-3 shadow-sm" width="120" height="120" onerror="this.style.display='none'">
@@ -254,13 +265,19 @@ export function displayApp(apps) {
           <p class="mb-1"><strong>Category:</strong> ${genre}</p>
           <p class="mb-1"><strong>Platform:</strong> ${platform}</p>
           <p class="mb-1"><strong>Developer:</strong> ${developer}</p>
-          <p class="mb-1"><strong>Description:</strong> ${description.substring(
-            0,
-            2000
-          )}${description.length > 2000 ? "…" : ""}</p>
-          <a href="${appStoreUrl}" class="btn btn-outline-primary btn-sm mt-2" target="_blank">Open in App Store
+<p class="mb-1">
+  <strong>Description:</strong>
+  <span class="short-text">${description.substring(0, 200)}</span>
+  <span class="full-text" style="display:none;">${description}</span>
+  ${
+    description.length > 200
+      ? '<button class="expand-btn btn btn-link p-0 ms-1">Expand</button>'
+      : ""
+  }
+</p>
+          <a href="${appStoreUrl}" class="btn btn-dark btn-sm mt-2 appstore-btn" target="_blank">Open in App Store
   </a>
-          <button id="saveFavButton" class="btn btn-success btn-sm mt-2 save-fav" data-bundle="${bundle}" data-name="${name}" data-art="${DOMPurify.sanitize(
+          <button id="saveFavButton" class="btn btn-primary btn-sm mt-2 save-fav" data-bundle="${bundle}" data-name="${name}" data-art="${DOMPurify.sanitize(
     app.artworkUrl60 || ""
   )}">Save to Favorites</button>
         </div>
@@ -287,11 +304,10 @@ export function populateFavorites(favoriteApps) {
   if (!favoriteApps || favoriteApps.length === 0) {
     //Wenn keine Favoriten gefunden werden
     favoritesList.html(
-      '<div class="list-group-item text-muted text-center">Keine Favoriten gespeichert.</div>'
+      '<div class="list-group-item text-muted text-center">No favorites saved yet.</div>'
     );
     return;
   }
-
 
   favoriteApps.forEach((app) => {
     //Daten extrahieren
@@ -337,7 +353,7 @@ export function populateFavorites(favoriteApps) {
 
     //Löschen Button
     const $deleteBtn = $("<button>")
-      .addClass("btn btn-sm btn-outline-primary ms-3")
+      .addClass("btn btn-sm btn-danger ms-3")
       .text("Delete")
       .data("trackId", app.trackId)
       .on("click", (e) => {
@@ -354,7 +370,7 @@ export function populateFavorites(favoriteApps) {
 
     //Details Button
     const $detailBtn = $("<button>")
-      .addClass("btn btn-sm btn-outline-primary ms-3")
+      .addClass("btn btn-sm btn-primary ms-3")
       .text("Details")
       .on("click", (e) => {
         e.preventDefault();

@@ -16,6 +16,7 @@ const keepOpenMenus = $(".dropdown-menu.keep-open");
 const searchMode = $("#searchMode");
 const developerInput = $("#developerInput");
 const favoritesList = $("#favoritesList");
+const resultField = $("#result");
 
 //Mapping für Plattform-Icons als Inline SVGs (Das gibt es unglaublicherweise tatsächlich!!)
 const platformIcons = {
@@ -47,6 +48,16 @@ function createPlatformIconContainer(item) {
     }
   });
   return $iconContainer;
+}
+
+/**
+ * Schreibt eine Fehlermeldung für den User sichtbar in das Resultat-Div
+ * @param {*} message Fehlermeldung
+ */
+export function displayError(message) {
+  resultField.html(message);
+  resultField.removeClass("text-muted");
+  resultField.addClass("alert alert-danger");
 }
 
 /**
@@ -238,7 +249,8 @@ export function displayApp(apps) {
     app = apps[0];
   } else {
     console.error("API Error - Keine App Daten gefunden");
-    return null;
+    displayError("API Error - no App data found");
+    return;
   }
   //Einzelne Daten extrahieren
   const img = DOMPurify.sanitize(app.artworkUrl512 || app.artworkUrl100 || "");
@@ -248,13 +260,15 @@ export function displayApp(apps) {
   const version = DOMPurify.sanitize(app.version || "");
   const genre = DOMPurify.sanitize(app.primaryGenreName || "");
   const platform = filter.getPlatforms(app).join(", ");
+  const minimumVersion = DOMPurify.sanitize(app.minimumOsVersion || "");
   const description = DOMPurify.sanitize(app.description || "");
   const developer = DOMPurify.sanitize(app.sellerName || "");
+  const fileSize = DOMPurify.sanitize(app.fileSizeBytes / 1000000 || "");
   const appStoreUrl = DOMPurify.sanitize(app.trackViewUrl || "#");
 
   //Daten in den DOM schreiben in das Objekt mit der ID result.
-  $("#result").removeClass("text-center text-muted");
-  $("#result").html(`
+  resultField.removeClass("text-center text-muted");
+  resultField.html(`
       <div class="d-flex align-items-start mb-3">
         <img src="${img}" class="rounded me-3 shadow-sm" width="120" height="120" onerror="this.style.display='none'">
         <div class="flex-grow-1">
@@ -264,7 +278,9 @@ export function displayApp(apps) {
           <p class="mb-1"><strong>Version:</strong> ${version}</p>
           <p class="mb-1"><strong>Category:</strong> ${genre}</p>
           <p class="mb-1"><strong>Platform:</strong> ${platform}</p>
+          <p class="mb-1"><strong>Minimum OS version:</strong> ${minimumVersion}</p>
           <p class="mb-1"><strong>Developer:</strong> ${developer}</p>
+          <p class="mb-1"><strong>File size in MB:</strong> ${fileSize}</p>   
 <p class="mb-1">
   <strong>Description:</strong>
   <span class="short-text">${description.substring(0, 200)}</span>
@@ -314,14 +330,7 @@ export function populateFavorites(favoriteApps) {
     const name = app.trackName || "Unbekannt";
     const iconUrl = app.artworkUrl60 || "";
     const bundleId = app.bundleId || "";
-    let id;
-    //Wenn die ID vorhanden da ist, kann die App nicht mehr aus den Favoriten gelöscht werden. Daher absolut sicherstellen, dass das nicht sein kann.
-    try {
-      id = app.trackId;
-    } catch (error) {
-      console.error("Fatal Error - App has no ID!");
-      return;
-    }
+    const id = app.trackId;
 
     //Container für Listenelemente
     const $item = $("<div>").addClass(

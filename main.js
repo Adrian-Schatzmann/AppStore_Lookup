@@ -76,6 +76,9 @@ async function getProcessedApps(input) {
           "Fehler bei der macOS-spezifischen iTunes API-Ajax Abfrage:",
           error.message
         );
+        ui.displayError(
+          "Fehler bei der macOS-spezifischen iTunes API-Ajax Abfrage"
+        );
       }
     }
 
@@ -95,6 +98,7 @@ async function getProcessedApps(input) {
         );
       } catch (error) {
         console.error("Fehler bei der iTunes API-Ajax Abfrage:", error.message); //Error handling
+        ui.displayError("Fehler bei der iTunes API-Ajax Abfrage");
       }
     }
     return combineResults(searchPromises);
@@ -107,10 +111,12 @@ async function getProcessedApps(input) {
       return apps;
     } catch (error) {
       console.error("Fehler bei der iTunes API-Ajax Abfrage:", error.message); //Error handling
+      ui.displayError("Fehler bei der iTunes API-Ajax Abfrage");
     }
   } else {
     //Error bei der Auswahl vom Suchmodus
     console.error("Unbekannte Suchmodus Auswahl");
+    ui.displayError("Unbekannte Suchmodus Auswahl");
   }
 }
 
@@ -135,7 +141,8 @@ async function combineResults(searchPromises) {
     return combinedResults;
   } catch (error) {
     //Error handling wenn mindestens eine der Anfragen fehlschlägt
-    console.error("Fehler bei der kombinierten Suche:", error);
+    console.error("Fehler bei der kombinierten Suche: ", error);
+    ui.displayError("Fehler bei der kombinierten Suche");
     return []; //Leeres Array zurückgeben, damit die UI nicht crasht
   }
 }
@@ -199,7 +206,8 @@ developerInput.on(
       console.log("test2", uniqueDeveloperNames); //debug
     } catch (error) {
       //Error handling
-      console.error("Fehler bei der kombinierten Entwicklersuche:", error);
+      console.error("Fehler bei der kombinierten Entwicklersuche: ", error);
+      ui.displayError("Fehler bei der kombinierten Entwicklersuche");
       return []; //Leeres Array zurückgeben, damit die UI nicht crasht
     }
   }, 200)
@@ -233,7 +241,8 @@ searchTermInput.on(
       );
     } catch (error) {
       //Error handling
-      console.error("Fehler bei der Softwaresuche:", error);
+      console.error("Fehler bei der Softwaresuche: ", error);
+      ui.displayError("Fehler bei der Softwaresuche");
       return []; //Leeres Array zurückgeben, damit die UI nicht crasht
     }
   }, 200)
@@ -251,11 +260,11 @@ async function loadFavorites() {
     } catch (error) {
       //Error handling
       console.error("Fehler beim Laden der Favoriten: ", error.message);
+      ui.displayError("Fehler beim Laden der Favoriten.");
     }
     //Auf alle Antworten warten und ein "normales" Array erstellen.
   });
   favoriteApps = await combineResults(searchPromises);
   ui.populateFavorites(favoriteApps);
-
 }
 document.addEventListener("reloadFavorites", loadFavorites);

@@ -263,7 +263,7 @@ export function displayApp(apps) {
   const minimumVersion = DOMPurify.sanitize(app.minimumOsVersion || "");
   const description = DOMPurify.sanitize(app.description || "");
   const developer = DOMPurify.sanitize(app.sellerName || "");
-  const fileSize = DOMPurify.sanitize(app.fileSizeBytes / 1000000 || "");
+  const fileSize = DOMPurify.sanitize(Math.round(app.fileSizeBytes / 1000000) || "");
   const appStoreUrl = DOMPurify.sanitize(app.trackViewUrl || "#");
 
   //Daten in den DOM schreiben in das Objekt mit der ID result.

@@ -62,7 +62,9 @@ function debounce(fn, delay) {
 /**
  * Neuladen der Favoriten nach einer Änderung
  */
-document.addEventListener("reloadFavorites", loadFavorites);
+$(document).on("reloadFavorites", function() {
+  loadFavorites();
+});
 
 //------------------------
 //Hauptfunktionen
@@ -76,7 +78,6 @@ searchButton.on("click", async function (e) {
   e.preventDefault(); //verhindet das Neuladen der Seite beim Absenden vom Formular
   const input = searchTermInput.val(); //Suchbegriff vom User holen
   const apps = await getProcessedApps(input);
-  console.log("wir sind beim searchButton-Eventlistener. " + apps); //debug
   //Steuerung für weiteren Ablauf.
   const appliedDevFilter = filter.filterDeveloper(apps); //Entwicklerfilter anwenden
   const appliedPlatformFilter = filter.filterPlatform(appliedDevFilter); //Platformfilter anwenden
@@ -211,7 +212,6 @@ developerInput.on(
         uniqueDeveloperNames,
         developerInput
       );
-      console.log("test2", uniqueDeveloperNames); //debug
     } catch (error) {
       //Error handling
       console.error("Fehler bei der kombinierten Entwicklersuche: ", error);

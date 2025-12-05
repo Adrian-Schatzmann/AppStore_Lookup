@@ -8,15 +8,14 @@ import * as localStorageHandler from "./localStorageHandler.js";
 //DOM Referenzen
 //------------------------
 //Findet alle Dropdown-Menüs mit der Klasse 'keep-open'
-const platformCheckboxes = document.querySelectorAll(
-  ".platform-dropdown .form-check-input"
-);
+const platformCheckboxes = $(".platform-dropdown .form-check-input");
 const platformButton = $("#platformSelectButton");
 const keepOpenMenus = $(".dropdown-menu.keep-open");
 const searchMode = $("#searchMode");
 const developerInput = $("#developerInput");
 const favoritesList = $("#favoritesList");
 const resultField = $("#result");
+const softwareSuggestions = $("#softwareSuggestions");
 
 //Mapping für Plattform-Icons als Inline SVGs (Das gibt es unglaublicherweise tatsächlich!!)
 const platformIcons = {
@@ -37,17 +36,17 @@ const platformIcons = {
  */
 function createPlatformIconContainer(item) {
   const platforms = filter.getPlatforms(item); //Platform für die aktuelle App holen
-  const $iconContainer = $("<div>").addClass(
+  const iconContainer = $("<div>").addClass(
     "d-flex align-items-center gap-1 ms-auto opacity-50"
   ); //container erstellen
   //passende icons dem Container hinzufügen
   platforms.forEach((plat) => {
     if (platformIcons[plat]) {
-      const $icon = $(platformIcons[plat]).attr("title", plat);
-      $iconContainer.append($icon);
+      const icon = $(platformIcons[plat]).attr("title", plat);
+      iconContainer.append(icon);
     }
   });
-  return $iconContainer;
+  return iconContainer;
 }
 
 /**
@@ -58,6 +57,22 @@ export function displayError(message) {
   resultField.html(message);
   resultField.removeClass("text-muted");
   resultField.addClass("alert alert-danger");
+}
+
+/**
+ * Setzt Formatierungen nach Fehlermeldung zurück
+ */
+export function resetErrorMessage() {
+  resultField.html("");
+  resultField.addClass("text-muted");
+  resultField.removeClass("alert alert-danger");
+}
+
+/**
+ * Schliesst das Dropdown Menü der App-Vorschläge
+ */
+export function closeSuggestionDropdown() {
+  softwareSuggestions.removeClass("show").empty();
 }
 
 /**
@@ -93,16 +108,12 @@ export function initializeUI() {
   });
 
   //Platform Button Text bei Änderung aktualisieren
-  platformCheckboxes.forEach(function (checkbox) {
-    checkbox.addEventListener("change", updatePlatformButtonText);
-  });
+  platformCheckboxes.on("change", updatePlatformButtonText);
   //Platform Button Text beim Laden der Seite aktualisieren
   updatePlatformButtonText();
 
-  platformCheckboxes.forEach(function (menu) {
-    //Abstand hinzufügen, weil wir hier keine eigenes CSS andwenden dürfen...
-    menu.style.marginLeft = "10px";
-  });
+  //Abstand hinzufügen, weil wir hier keine eigenes CSS andwenden dürfen...
+  platformCheckboxes.css("margin-left", "10px");
 }
 
 /**
@@ -152,13 +163,13 @@ export function populateSuggestions(
   targetInput
 ) {
   //Container leeren und ausblenden
-  $(suggestionsContainer).removeClass("show").empty();
+  suggestionsContainer.removeClass("show").empty();
 
   if (!results || results.length === 0) return;
 
   //Max 20 Vorschläge anzeigen
   results.slice(0, 20).forEach((item) => {
-    let $itemButton;
+    let itemButton;
     let valueToInsert;
 
     // --- FALL 1: App-Objekt (mit Bild und Details) ---
@@ -169,13 +180,13 @@ export function populateSuggestions(
       valueToInsert = name; //Was ins Input-Feld geschrieben wird
 
       //Button Container erstellen
-      $itemButton = $("<button>")
+      itemButton = $("<button>")
         .attr("type", "button")
         .addClass("dropdown-item d-flex align-items-center py-2")
         .attr("title", name);
 
       //Icon
-      const $img = $("<img>")
+      const img = $("<img>")
         .attr("src", iconUrl)
         .addClass("rounded me-3 border")
         .attr("width", "32")
@@ -183,26 +194,26 @@ export function populateSuggestions(
         .css("object-fit", "cover");
 
       //Text Container
-      const $textDiv = $("<div>").addClass("flex-grow-1 text-truncate");
-      const $nameSpan = $("<div>").addClass("fw-bold text-truncate").text(name);
-      const $bundleSpan = $("<small>")
+      const textDiv = $("<div>").addClass("flex-grow-1 text-truncate");
+      const nameSpan = $("<div>").addClass("fw-bold text-truncate").text(name);
+      const bundleSpan = $("<small>")
         .addClass("text-muted d-block text-truncate")
         .css("font-size", "0.75rem")
         .text(bundleId);
-      $textDiv.append($nameSpan).append($bundleSpan);
+      textDiv.append(nameSpan).append(bundleSpan);
 
       //Platformicons
-      const $iconContainer = createPlatformIconContainer(item);
+      const iconContainer = createPlatformIconContainer(item);
 
       //Alles zusammenfügen
-      $itemButton.append($img).append($textDiv).append($iconContainer);
+      itemButton.append(img).append(textDiv).append(iconContainer);
     }
 
     // --- FALL 2: Einfacher String (Entwickler) ---
     else {
       valueToInsert = item; //Der String selbst
 
-      $itemButton = $("<button>")
+      itemButton = $("<button>")
         .attr("type", "button")
         .addClass("dropdown-item")
         .text(item)
@@ -210,13 +221,13 @@ export function populateSuggestions(
     }
 
     // --- GEMEINSAMER KLICK-HANDLER ---
-    $itemButton.on("click", (e) => {
+    itemButton.on("click", (e) => {
       e.preventDefault();
       //Wert ins Inputfeld schreiben
       targetInput.val(valueToInsert);
 
       //Dropdown schließen
-      $(suggestionsContainer).removeClass("show").empty();
+      suggestionsContainer.removeClass("show").empty();
 
       //Bei Klick auf das Dropdown Element, die Daten direkt anzeigen lassen.
       if (typeof item === "object" && item !== null) {
@@ -226,11 +237,11 @@ export function populateSuggestions(
     });
 
     //Ins DOM hängen
-    $(suggestionsContainer).append($itemButton);
+    suggestionsContainer.append(itemButton);
   });
 
   //Anzeigen
-  $(suggestionsContainer).addClass("show");
+  suggestionsContainer.addClass("show");
 }
 
 /**
@@ -263,7 +274,9 @@ export function displayApp(apps) {
   const minimumVersion = DOMPurify.sanitize(app.minimumOsVersion || "");
   const description = DOMPurify.sanitize(app.description || "");
   const developer = DOMPurify.sanitize(app.sellerName || "");
-  const fileSize = DOMPurify.sanitize(Math.round(app.fileSizeBytes / 1000000) || "");
+  const fileSize = DOMPurify.sanitize(
+    Math.round(app.fileSizeBytes / 1000000) || ""
+  );
   const appStoreUrl = DOMPurify.sanitize(app.trackViewUrl || "#");
 
   //Daten in den DOM schreiben in das Objekt mit der ID result.
@@ -333,12 +346,12 @@ export function populateFavorites(favoriteApps) {
     const id = app.trackId;
 
     //Container für Listenelemente
-    const $item = $("<div>").addClass(
+    const item = $("<div>").addClass(
       "list-group-item list-group-item-action d-flex align-items-center p-2"
     );
 
     //Icon
-    const $img = $("<img>")
+    const img = $("<img>")
       .attr("src", iconUrl)
       .addClass("rounded me-3 border")
       .attr("width", "40")
@@ -346,22 +359,22 @@ export function populateFavorites(favoriteApps) {
       .css("object-fit", "cover");
 
     //Text-Bereich
-    const $textDiv = $("<div>").addClass("flex-grow-1 overflow-hidden");
-    const $nameSpan = $("<div>").addClass("fw-bold text-truncate").text(name);
-    const $bundleSpan = $("<small>")
+    const textDiv = $("<div>").addClass("flex-grow-1 overflow-hidden");
+    const nameSpan = $("<div>").addClass("fw-bold text-truncate").text(name);
+    const bundleSpan = $("<small>")
       .addClass("text-muted d-block text-truncate")
       .text(bundleId + ", " + id);
 
     // Plattform Icons
-    const $platIcons = createPlatformIconContainer(app)
+    const platIcons = createPlatformIconContainer(app)
       .removeClass("ms-auto")
       .addClass("mt-1");
 
     //Zusammenfügen
-    $textDiv.append($nameSpan).append($bundleSpan);
+    textDiv.append(nameSpan).append(bundleSpan);
 
     //Löschen Button
-    const $deleteBtn = $("<button>")
+    const deleteBtn = $("<button>")
       .addClass("btn btn-sm btn-danger ms-3")
       .text("Delete")
       .data("trackId", app.trackId)
@@ -378,7 +391,7 @@ export function populateFavorites(favoriteApps) {
       });
 
     //Details Button
-    const $detailBtn = $("<button>")
+    const detailBtn = $("<button>")
       .addClass("btn btn-sm btn-primary ms-3")
       .text("Details")
       .on("click", (e) => {
@@ -391,16 +404,16 @@ export function populateFavorites(favoriteApps) {
       });
 
     //Plattform-Icons
-    const $rightSection = $("<div>").addClass(
+    const rightSection = $("<div>").addClass(
       "d-flex align-items-center ms-auto"
     );
-    $rightSection
+    rightSection
       .append(createPlatformIconContainer(app))
-      .append($deleteBtn)
-      .append($detailBtn);
+      .append(deleteBtn)
+      .append(detailBtn);
 
     //Alles Zusammenfügen
-    $item.append($img).append($textDiv).append($rightSection);
-    favoritesList.append($item);
+    item.append(img).append(textDiv).append(rightSection);
+    favoritesList.append(item);
   });
 }

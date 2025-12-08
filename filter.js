@@ -5,7 +5,7 @@
 /**
  * Bestimmt die Plattform einer App aus iTunes Search API Berücksichtigt sowohl supportedDevices als auch die Entity
  * @param {*} app App-Objekt aus iTunes API
- * @returns As Array: Plattform: "iOS", "iPadOS", "Mac", "tvOS", "watchOS"
+ * @returns As Array: Plattform: "iOS", "iPadOS", "Mac", "watchOS"
  */
 export function getPlatforms(app) {
   const entity = (app.entity || "").toLowerCase();
@@ -28,14 +28,6 @@ export function getPlatforms(app) {
   ) {
     //kind mac-software wegen edgecase für z.B. iMovie
     platformList.push("macOS");
-  }
-  if (
-    supported.some((d) => d.toLowerCase().includes("appletv")) ||
-    kind === "tv-app" ||
-    (app.appletvScreenshotUrls && app.appletvScreenshotUrls.length > 0) ||
-    (app.tvosScreenshotUrls && app.tvosScreenshotUrls.length > 0)
-  ) {
-    platformList.push("tv");
   }
   if (supported.some((d) => d.toLowerCase().includes("watch"))) {
     platformList.push("watchOS");
@@ -83,7 +75,7 @@ export function filterPlatform(apps) {
   let filteredApps = [];
 
   //Keine Filterung bei entsprechender Eingabe. Die restliche Funktion wird übersprungen.
-  if (selectedPlatforms.length === 0 || selectedPlatforms.length === 5) {
+  if (selectedPlatforms.length === 0 || selectedPlatforms.length === 4) {
     console.log("Keine Platformsuche");
     return apps;
   }

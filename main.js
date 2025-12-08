@@ -62,7 +62,7 @@ function debounce(fn, delay) {
 /**
  * Neuladen der Favoriten nach einer Änderung
  */
-$(document).on("reloadFavorites", function() {
+$(document).on("reloadFavorites", function () {
   loadFavorites();
 });
 
@@ -112,7 +112,7 @@ async function getProcessedApps(input) {
     if (
       selectedPlatforms.includes("macOS") ||
       selectedPlatforms.length === 0 ||
-      selectedPlatforms.length === 5
+      selectedPlatforms.length === 4
     ) {
       console.log("macOS Ajax Abfrage startet"); //debug
       try {
@@ -138,7 +138,7 @@ async function getProcessedApps(input) {
     if (
       !isOnlyMacSelected ||
       selectedPlatforms.length === 0 ||
-      selectedPlatforms.length === 5
+      selectedPlatforms.length === 4
     ) {
       console.log("mobile Ajax Abfrage startet"); //debug
       try {
@@ -231,6 +231,10 @@ searchTermInput.on(
     if ($("#searchMode").val() === "id") {
       return;
     }
+
+    ui.resetErrorMessage(); //Vorherige Fehlermeldungen zurücksetzen
+    ui.closeSuggestionDropdown(); //Dropdowns schliessen
+
     try {
       //Ajax Abfrage
       const combinedResults = await getProcessedApps(searchTermInput.val());
@@ -242,11 +246,19 @@ searchTermInput.on(
       ); //Ergebnisse nach Relevanz sortieren
       console.log("Fertig gefilterte und sortierte Apps: ", sortedByRelevance);
       //Resultate dem User anzeigen
-      ui.populateSuggestions(
-        softwareSuggestions,
-        sortedByRelevance,
-        searchTermInput
-      );
+      if (sortedByRelevance && sortedByRelevance.length > 0) {
+        ui.populateSuggestions(
+          softwareSuggestions,
+          sortedByRelevance,
+          searchTermInput
+        );
+      } else if(searchTermInput.val() != ""){
+        console.error("Keine App Daten gefunden");
+        ui.displayError("No App data found");
+        return;
+      } else {
+        console.warn("API Abfrage bei leerem Input");
+      }
     } catch (error) {
       //Error handling
       console.error("Fehler bei der Softwaresuche: ", error);

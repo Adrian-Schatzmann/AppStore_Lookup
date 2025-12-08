@@ -8,9 +8,14 @@
 
     <!-- Bootstrap CSS -->
     <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
       rel="stylesheet"
+      integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+      crossorigin="anonymous"
     />
+
+    <!-- Eigenes CSS -->
+    <link rel="stylesheet" href="style.css" />
   </head>
 
   <body class="bg-light">
@@ -25,7 +30,7 @@
             <label for="searchMode" class="form-label">Search Mode</label>
             <select id="searchMode" class="form-select">
               <option value="name">App Name</option>
-              <option id="searchMode" value="id">App Store ID</option>
+              <option value="id">App Store ID</option>
             </select>
           </div>
 
@@ -72,16 +77,6 @@
                       value="macOS"
                     />
                     <span class="form-check-label ms-2">macOS</span>
-                  </label>
-                </li>
-                <li>
-                  <label class="dropdown-item form-check mb-0">
-                    <input
-                      class="form-check-input"
-                      type="checkbox"
-                      value="tvOS"
-                    />
-                    <span class="form-check-label ms-2">tvOS</span>
                   </label>
                 </li>
                 <li>
@@ -141,7 +136,7 @@
           </div>
         </form>
       </div>
-<h3>//Beispiel-ID: 1542025935</h3>
+      <h3>//Beispiel-ID: 1542025935</h3>
       <!-- Result -->
       <div id="result" class="card p-3 shadow-sm mb-3 text-muted text-center">
         No search executed yet.
@@ -152,20 +147,28 @@
         <h5 class="mb-3">Favorites</h5>
         <div id="favoritesList" class="list-group"></div>
       </div>
+    </div>
 
     <!-- jQuery -->
     <script
       src="https://code.jquery.com/jquery-3.7.1.min.js"
       integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
       crossorigin="anonymous"
+      defer
     ></script>
 
-    <script type="text/javascript" src="DOMPurify/purify.min.js"></script>
+    <!-- Eigenes JS Skript -->
+    <script type="module" src="main.js"></script>
+    <!-- defer ist bereits durch type=module geregelt. -->
 
-    <!-- JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+      crossorigin="anonymous" defer
+    ></script>
 
-    <!-- Skript, um das Dropdown beim Klicken offen zu halten -->
-    <script type="module" src="main.js" defer></script>
+    <!-- DOMPurify -->
+    <script src="DOMPurify/purify.min.js" defer></script>
   </body>
 </html>

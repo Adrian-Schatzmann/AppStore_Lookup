@@ -39,8 +39,7 @@ export function iTunesLookupAPI(appID) {
 export function iTunesSearchAPI(term, platform, attribute, limit) {
   //Rückgabe der Daten oder eines Fehlers vorbereiten
   return new Promise((resolve, reject) => {
-
-  //Filtere Medientyp anhand des Platformfilters.
+    //Filtere Medientyp anhand des Platformfilters.
     let media = "all";
     if (platform === "desktop") {
       media = "macSoftware";
@@ -67,6 +66,43 @@ export function iTunesSearchAPI(term, platform, attribute, limit) {
       error: function () {
         //Error handling
         reject(new Error("Fehler: Timeout oder ungültige Anfrage."));
+      },
+    });
+  });
+}
+
+/**
+ * Fragt die NVD API nach kritischen Sicherheitslücken (CRITICAL) der letzten 7 Tage ab.
+ * @param {string} keyword Optionaler Suchbegriff (z.B. "Apple", "Jamf")
+ */
+export function searchCriticalCves(keyword) {
+  return new Promise((resolve, reject) => {
+    const url = "https://services.nvd.nist.gov/rest/json/cves/2.0";
+
+    //Datum berechnen (Heute - 7 Tage)
+    const date = new Date();
+    date.setDate(date.getDate() - 60);
+    const pubStartDate = date.toISOString().slice(0, 10) + "T00:00:00.000Z";
+
+    const severity = "CRITICAL";
+    const limit = 10;
+
+    $.ajax({
+      url: url,
+      dataType: "json",
+      cache: true,
+      data: {
+        cvssV31Severity: severity,
+        pubStartDate: pubStartDate,
+        resultsPerPage: limit,
+      //  keywordSearch: keyword,
+      },
+      success: function (data) {
+        resolve(data);
+      },
+      error: function (xhr, status, error) {
+        // Error handling mit Details aus dem Request
+        reject(new Error(`Fehler: ${status} - ${error}`));
       },
     });
   });

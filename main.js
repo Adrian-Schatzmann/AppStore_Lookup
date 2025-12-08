@@ -14,7 +14,7 @@ const developerInput = $("#developerInput");
 const developerSuggestions = $("#developerSuggestions");
 const searchTermInput = $("#searchTermInput");
 const softwareSuggestions = $("#softwareSuggestions");
-
+console.log(apiHandler.searchCriticalCves("Apple"));
 //------------------------
 //Hilfsfunktionen
 //------------------------

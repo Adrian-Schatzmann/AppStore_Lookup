@@ -111,9 +111,6 @@ export function initializeUI() {
   platformCheckboxes.on("change", updatePlatformButtonText);
   //Platform Button Text beim Laden der Seite aktualisieren
   updatePlatformButtonText();
-
-  //Abstand hinzufügen, weil wir hier keine eigenes CSS andwenden dürfen...
-  platformCheckboxes.css("margin-left", "10px");
 }
 
 /**

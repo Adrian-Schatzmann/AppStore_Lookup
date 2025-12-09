@@ -14,7 +14,8 @@ const developerInput = $("#developerInput");
 const developerSuggestions = $("#developerSuggestions");
 const searchTermInput = $("#searchTermInput");
 const softwareSuggestions = $("#softwareSuggestions");
-console.log(apiHandler.searchCriticalCves("Apple"));
+const test = await apiHandler.nistNVDApi();
+console.log(test.vulnerabilities);
 //------------------------
 //Hilfsfunktionen
 //------------------------

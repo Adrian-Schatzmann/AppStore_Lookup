@@ -72,30 +72,34 @@ export function iTunesSearchAPI(term, platform, attribute, limit) {
 }
 
 /**
- * Fragt die NVD API nach kritischen Sicherheitslücken (CRITICAL) der letzten 7 Tage ab.
- * @param {string} keyword Optionaler Suchbegriff (z.B. "Apple", "Jamf")
+ * Fragt die National Vulnerability Database API von NIST nach den heutigen kritischen Sicherheitslücken ab.
  */
-export function searchCriticalCves(keyword) {
+export function nistNVDApi() {
   return new Promise((resolve, reject) => {
     const url = "https://services.nvd.nist.gov/rest/json/cves/2.0";
 
-    //Datum berechnen (Heute - 7 Tage)
+    //Datum berechnen (heute und vor 119 Tagen in ISO-8601)
     const date = new Date();
-    date.setDate(date.getDate() - 60);
-    const pubStartDate = date.toISOString().slice(0, 10) + "T00:00:00.000Z";
+    const pubEndDate = date.toISOString();
+    date.setDate(date.getDate() - 1); //120 Tage wäre ist das Maximum, dass die API erlaubt.
+    const pubStartDate = date.toISOString();
+    console.log(pubStartDate);
+    console.log(pubEndDate);
 
+    //Weitere Parameter
     const severity = "CRITICAL";
-    const limit = 10;
+    const limit = 5;
 
     $.ajax({
       url: url,
       dataType: "json",
       cache: true,
       data: {
-        cvssV4Severity: severity,
+        cvssV3Severity: severity,
         pubStartDate: pubStartDate,
-        resultsPerPage: limit,
-      //  keywordSearch: keyword,
+        pubEndDate: pubEndDate,
+        //resultsPerPage: limit,
+        //keywordSearch: keyword,
       },
       success: function (data) {
         resolve(data);

@@ -76,6 +76,7 @@ ui.initializeUI();
  */
 searchButton.on("click", async function (e) {
   e.preventDefault(); //verhindet das Neuladen der Seite beim Absenden vom Formular
+  ui.resetErrorMessage(); //Fehler zurücksetzen
   const input = searchTermInput.val(); //Suchbegriff vom User holen
   const apps = await getProcessedApps(input);
   //Steuerung für weiteren Ablauf.

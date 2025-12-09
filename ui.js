@@ -291,7 +291,7 @@ export function displayApp(apps) {
           <p class="mb-1"><strong>Platform:</strong> ${platform}</p>
           <p class="mb-1"><strong>Minimum OS version:</strong> ${minimumVersion}</p>
           <p class="mb-1"><strong>Developer:</strong> ${developer}</p>
-          <p class="mb-1"><strong>Content advisory rating:</strong> ${contentAdvisoryRating}</p>
+          <p class="mb-1"><strong>Age rating:</strong> ${contentAdvisoryRating}</p>
           <p class="mb-1"><strong>File size in MB:</strong> ${fileSize}</p>   
 <p class="mb-1">
   <strong>Description:</strong>

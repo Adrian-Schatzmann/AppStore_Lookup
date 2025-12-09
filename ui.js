@@ -271,6 +271,7 @@ export function displayApp(apps) {
   const minimumVersion = DOMPurify.sanitize(app.minimumOsVersion || "");
   const description = DOMPurify.sanitize(app.description || "");
   const developer = DOMPurify.sanitize(app.sellerName || "");
+  const contentAdvisoryRating = DOMPurify.sanitize(app.contentAdvisoryRating || "");
   const fileSize = DOMPurify.sanitize(
     Math.round(app.fileSizeBytes / 1000000) || ""
   );
@@ -290,6 +291,7 @@ export function displayApp(apps) {
           <p class="mb-1"><strong>Platform:</strong> ${platform}</p>
           <p class="mb-1"><strong>Minimum OS version:</strong> ${minimumVersion}</p>
           <p class="mb-1"><strong>Developer:</strong> ${developer}</p>
+          <p class="mb-1"><strong>Content advisory rating:</strong> ${contentAdvisoryRating}</p>
           <p class="mb-1"><strong>File size in MB:</strong> ${fileSize}</p>   
 <p class="mb-1">
   <strong>Description:</strong>

@@ -92,7 +92,7 @@ export function searchCriticalCves(keyword) {
       dataType: "json",
       cache: true,
       data: {
-        cvssV31Severity: severity,
+        cvssV4Severity: severity,
         pubStartDate: pubStartDate,
         resultsPerPage: limit,
       //  keywordSearch: keyword,

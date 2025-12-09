@@ -14,8 +14,7 @@ const developerInput = $("#developerInput");
 const developerSuggestions = $("#developerSuggestions");
 const searchTermInput = $("#searchTermInput");
 const softwareSuggestions = $("#softwareSuggestions");
-const test = await apiHandler.nistNVDApi();
-console.log(test.vulnerabilities);
+
 //------------------------
 //Hilfsfunktionen
 //------------------------
@@ -67,11 +66,18 @@ $(document).on("reloadFavorites", function () {
   loadFavorites();
 });
 
+async function initializeCVE() {
+  const cve = await apiHandler.nistNVDApi();
+  ui.displayCVEs(cve.vulnerabilities);
+}
+
 //------------------------
 //Hauptfunktionen
 //------------------------
 loadFavorites();
 ui.initializeUI();
+await initializeCVE();
+
 /**
  * Event Listener für den Such-Button. Startet die App Abfrage und Ergebnisfilter. Wird aller Wahrscheinlichkeit nur im ID-Modus verwendet.
  */
@@ -254,7 +260,7 @@ searchTermInput.on(
           sortedByRelevance,
           searchTermInput
         );
-      } else if(searchTermInput.val() != ""){
+      } else if (searchTermInput.val() != "") {
         console.error("Keine App Daten gefunden");
         ui.displayError("No App data found");
         return;

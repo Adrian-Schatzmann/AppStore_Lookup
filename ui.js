@@ -248,6 +248,7 @@ export function populateSuggestions(
  */
 export function displayApp(apps) {
   console.log(apps);
+  resultField.empty();
   //Benötigte Infos aus App Objekt extrahieren (DOMPurify entfernt schädlichen code, || "" ist ein fallback falls es diesen Eintrag nicht gibt.)
   //DOMPurify siehe https://github.com/cure53/DOMPurify
 
@@ -271,7 +272,9 @@ export function displayApp(apps) {
   const minimumVersion = DOMPurify.sanitize(app.minimumOsVersion || "");
   const description = DOMPurify.sanitize(app.description || "");
   const developer = DOMPurify.sanitize(app.sellerName || "");
-  const contentAdvisoryRating = DOMPurify.sanitize(app.contentAdvisoryRating || "");
+  const contentAdvisoryRating = DOMPurify.sanitize(
+    app.contentAdvisoryRating || ""
+  );
   const fileSize = DOMPurify.sanitize(
     Math.round(app.fileSizeBytes / 1000000) || ""
   );
@@ -414,5 +417,105 @@ export function populateFavorites(favoriteApps) {
     //Alles Zusammenfügen
     item.append(img).append(textDiv).append(rightSection);
     favoritesList.append(item);
+  });
+}
+/*
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**
+ * Zeigt eine Liste von CVEs (Sicherheitslücken) im DOM an.
+ * @param {Array} cveList Das Array von CVE-Items aus der API
+ */
+export function displayCVEs(cveList) {
+  const cveDomContainer = $("#cve");
+  cveDomContainer.empty(); // Container leeren
+
+  if (!cveList || cveList.length === 0) {
+    cveDomContainer.html(
+      '<div class="alert alert-info">Keine kritischen CVEs gefunden.</div>'
+    );
+    return;
+  }
+
+  cveList.forEach((item) => {
+    //Die API kapselt alles in einem "cve"-Objekt
+    const cve = item.cve;
+
+    //Daten extrahieren
+    const id = DOMPurify.sanitize(cve.id);
+    const source = DOMPurify.sanitize(cve.sourceIdentifier || "unknown");
+    const publishedDate = DOMPurify.sanitize(
+      new Date(cve.published).toLocaleDateString("de-DE")
+    );
+    const status = DOMPurify.sanitize(cve.vulnStatus || "unknown");
+
+    //Beschreibung finden (bevorzugt Englisch)
+    const descObj =
+      cve.descriptions.find((d) => d.lang === "en") || cve.descriptions[0];
+    const description = DOMPurify.sanitize(descObj ? descObj.value : "N/A");
+
+    //Score extrahieren (CVSS v3.1 bevorzugt)
+    let score = "N/A";
+    let severity = "UNKNOWN";
+
+    // Prüfen, ob v3.1 Metriken vorhanden sind
+    if (
+      cve.metrics &&
+      cve.metrics.cvssMetricV31 &&
+      cve.metrics.cvssMetricV31.length > 0
+    ) {
+      const metric = cve.metrics.cvssMetricV31[0].cvssData;
+      score = metric.baseScore;
+      severity = metric.baseSeverity;
+    }
+
+    //HTML Template bauen
+    const html = `
+            <div class="list-group-item rounded me-3 border ${
+              severity === "CRITICAL"
+            } p-3">
+                <div class="d-flex flex-wrap justify-content-between align-items-start mb-2">
+                    <div class="me-2 mb-1">
+                        <h5 class="mb-0 text-primary text-break">
+                            <a href="https://nvd.nist.gov/vuln/detail/${id}" target="_blank" class="text-decoration-none">
+                                ${id}
+                            </a>
+                        </h5>
+                        <small class="text-muted text-break">Published: ${publishedDate} | Source: ${source}</small>
+                    </div>
+                    <div class="text-end ms-auto">
+                        <span class="badge bg-danger fs-6">${score} ${severity}</span>
+                        <div class="small text-muted mt-1 text-nowrap">${status}</div>
+                    </div>
+                </div>
+
+                <p class="mb-2 mt-2 text-break">${description}</p>
+            </div>
+        `;
+
+    //In den DOM schreiben
+    cveDomContainer.append(html);
   });
 }

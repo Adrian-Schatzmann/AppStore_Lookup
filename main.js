@@ -66,16 +66,30 @@ $(document).on("reloadFavorites", function () {
   loadFavorites();
 });
 
+/**
+ * Initialisiert das CVE-Feature
+ */
+async function initializeCVE() {
+  const cve = await apiHandler.nistNVDApi();
+  cve.vulnerabilities.sort(
+    (a, b) => new Date(b.cve.published) - new Date(a.cve.published)
+  ); //Nach Datum sortieren
+  ui.displayCVEs(cve.vulnerabilities);
+}
+
 //------------------------
 //Hauptfunktionen
 //------------------------
 loadFavorites();
 ui.initializeUI();
+await initializeCVE();
+
 /**
  * Event Listener für den Such-Button. Startet die App Abfrage und Ergebnisfilter. Wird aller Wahrscheinlichkeit nur im ID-Modus verwendet.
  */
 searchButton.on("click", async function (e) {
   e.preventDefault(); //verhindet das Neuladen der Seite beim Absenden vom Formular
+  ui.resetErrorMessage(); //Fehler zurücksetzen
   const input = searchTermInput.val(); //Suchbegriff vom User holen
   const apps = await getProcessedApps(input);
   //Steuerung für weiteren Ablauf.
@@ -252,7 +266,7 @@ searchTermInput.on(
           sortedByRelevance,
           searchTermInput
         );
-      } else if(searchTermInput.val() != ""){
+      } else if (searchTermInput.val() != "") {
         console.error("Keine App Daten gefunden");
         ui.displayError("No App data found");
         return;

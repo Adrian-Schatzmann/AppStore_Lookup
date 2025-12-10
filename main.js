@@ -66,8 +66,14 @@ $(document).on("reloadFavorites", function () {
   loadFavorites();
 });
 
+/**
+ * Initialisiert das CVE-Feature
+ */
 async function initializeCVE() {
   const cve = await apiHandler.nistNVDApi();
+  cve.vulnerabilities.sort(
+    (a, b) => new Date(b.cve.published) - new Date(a.cve.published)
+  ); //Nach Datum sortieren
   ui.displayCVEs(cve.vulnerabilities);
 }
 

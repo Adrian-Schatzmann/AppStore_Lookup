@@ -454,7 +454,7 @@ export function displayCVEs(cveList) {
 
   if (!cveList || cveList.length === 0) {
     cveDomContainer.html(
-      '<div class="alert alert-info">Keine kritischen CVEs gefunden.</div>'
+      '<div class="text-muted text-center">No critical CVEs found. What a day!</div>'
     );
     return;
   }

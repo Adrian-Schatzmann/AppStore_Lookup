@@ -311,7 +311,7 @@ searchTermInput.on(
       ui.displayError("Error during software search");
       return []; //Leeres Array zurückgeben, damit die UI nicht crasht
     }
-  }, 200)
+  }, 250)
 );
 
 async function loadFavorites() {

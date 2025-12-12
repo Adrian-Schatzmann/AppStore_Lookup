@@ -1,3 +1,35 @@
 .platform-dropdown .form-check-input {
   margin-left: 10px;
 }
+
+@media only screen and (max-width: 500px) {
+
+
+  .list-group-item.d-flex {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+  .favoritesRightSection {
+    margin-left: 0 !important;
+    justify-content: flex-start !important;
+    flex-direction: row;
+    gap: 0.5rem;
+  }
+}
+
+@media only screen and (max-width: 600px) {
+  .appIcon {
+    float: right;
+  }
+  .resultDiv {
+    display: block !important;
+  }
+
+}
+
+  .appIcon {
+    float: right;
+  }
+    .resultDiv {
+    display: block !important;
+  }

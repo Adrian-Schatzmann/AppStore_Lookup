@@ -50,7 +50,7 @@ export function filterDeveloper(apps) {
   }
 
   for (const app of apps) {
-    if (app.sellerName === selectedDeveloper) {
+    if (app.sellerName.includes(selectedDeveloper)) {
       filteredApps.push(app);
     }
   }

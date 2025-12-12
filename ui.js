@@ -15,6 +15,7 @@ const developerInput = $("#developerInput");
 const favoritesList = $("#favoritesList");
 const resultField = $("#result");
 const softwareSuggestions = $("#softwareSuggestions");
+const searchTermInput = $("#searchTermInput");
 
 //Mapping für Plattform-Icons als Inline SVGs (Das gibt es unglaublicherweise tatsächlich!!)
 const platformIcons = {
@@ -235,6 +236,10 @@ export function displayApp(apps) {
   let app = "";
   if (apps && apps.length > 0) {
     app = apps[0];
+  } else if (searchTermInput.val().length === 0) {
+    console.warn("Search with empty input");
+    displayError("Search with empty input");
+    return;
   } else {
     console.error("API Error - no App data found");
     displayError("API Error - no App data found");
@@ -279,9 +284,15 @@ export function displayApp(apps) {
         <strong>Description:</strong>
         <span class="short-text">${description.substring(0, 200)}</span>
         <span class="full-text" style="display:none;">${description}</span>
-        ${description.length > 200 ? '<button class="expand-btn btn btn-link p-0 ms-1">Expand</button>' : ""}
+        ${
+          description.length > 200
+            ? '<button class="expand-btn btn btn-link p-0 ms-1">Expand</button>'
+            : ""
+        }
       </p>
-      <button id="saveFavButton" class="btn btn-primary btn-sm mt-2 save-fav" data-bundle="${bundle}" data-name="${name}" data-art="${DOMPurify.sanitize(app.artworkUrl60 || "")}">Save to Favorites</button>
+      <button id="saveFavButton" class="btn btn-primary btn-sm mt-2 save-fav" data-bundle="${bundle}" data-name="${name}" data-art="${DOMPurify.sanitize(
+    app.artworkUrl60 || ""
+  )}">Save to Favorites</button>
     </div>
   </div>
   `);

@@ -18,7 +18,7 @@ export function addFavorites(favoriteToAdd) {
  * @param {*} favoriteToRemove App ID der App, die aus den Favoriten entfernt werden soll
  */
 export function removeFavorites(favoriteToRemove) {
-  console.log("Aus den Favoriten zu entfernende App: " + favoriteToRemove);
+  console.log("App to be removed from favorites: " + favoriteToRemove);
   //Bestehendes array holen falls vorhanden
   let currentArray = JSON.parse(localStorage.getItem("favorites")) || [];
   //Bestehenden Favorit entfernen

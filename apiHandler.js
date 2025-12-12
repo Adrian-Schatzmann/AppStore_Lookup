@@ -75,6 +75,7 @@ export function iTunesSearchAPI(term, platform, attribute, limit) {
  * Fragt die National Vulnerability Database API von NIST nach den heutigen kritischen Sicherheitslücken ab.
  */
 export function nistNVDApi() {
+  
   return new Promise((resolve, reject) => {
     const url = "https://services.nvd.nist.gov/rest/json/cves/2.0";
 
@@ -83,8 +84,6 @@ export function nistNVDApi() {
     const pubEndDate = date.toISOString();
     date.setDate(date.getDate() - 1); //120 Tage wäre ist das Maximum, dass die API erlaubt.
     const pubStartDate = date.toISOString();
-    console.log(pubStartDate);
-    console.log(pubEndDate);
 
     //Weitere Parameter
     const severity = "CRITICAL";
@@ -99,7 +98,7 @@ export function nistNVDApi() {
         pubStartDate: pubStartDate,
         pubEndDate: pubEndDate,
         //resultsPerPage: limit,
-        //keywordSearch: keyword,
+        //keywordSearch: "NutzlosesKeywordDasHoffentlichInKeinemCVEvorkommt...(-_-)",
       },
       success: function (data) {
         resolve(data);

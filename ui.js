@@ -11,11 +11,11 @@ import * as localStorageHandler from "./localStorageHandler.js";
 const platformCheckboxes = $(".platform-dropdown .form-check-input");
 const platformButton = $("#platformSelectButton");
 const keepOpenMenus = $(".dropdown-menu.keep-open");
-const searchMode = $("#searchMode");
 const developerInput = $("#developerInput");
 const favoritesList = $("#favoritesList");
 const resultField = $("#result");
 const softwareSuggestions = $("#softwareSuggestions");
+const searchTermInput = $("#searchTermInput");
 
 //Mapping für Plattform-Icons als Inline SVGs (Das gibt es unglaublicherweise tatsächlich!!)
 const platformIcons = {
@@ -126,26 +126,6 @@ $(document).on("click", ".expand-btn", function () {
 //------------------------
 //Hauptfunktionen
 //------------------------
-//Event-Listener für das "Search Mode"-Dropdown
-searchMode.on("change", function () {
-  if (this.value === "id") {
-    //Dieser Block wird ausgeführt, wenn "App Store ID" ausgewählt wird.
-    //Inputs zurücksetzen und deaktivieren
-    platformButton.prop("disabled", true);
-    developerInput.val("");
-    //    platformCheckboxes.forEach(function (checkbox) {
-    //     checkbox.checked = keepOpenMenus.checked;
-    //    });
-    updatePlatformButtonText();
-    developerInput.prop("disabled", true);
-  } else {
-    // Dieser Block wird ausgeführt, wenn "App Name" ausgewählt wird.
-    //Inputs aktivieren
-    platformButton.prop("disabled", false);
-    developerInput.prop("disabled", false);
-  }
-});
-
 /**
  * Universelle Funktion für Dropdown-Vorschläge.
  * Erkennt automatisch, ob es sich um einfache Strings (Entwickler)
@@ -247,7 +227,7 @@ export function populateSuggestions(
  * @returns null bei Error
  */
 export function displayApp(apps) {
-  console.log(apps);
+  console.log("App to display: ", apps);
   resultField.empty();
   //Benötigte Infos aus App Objekt extrahieren (DOMPurify entfernt schädlichen code, || "" ist ein fallback falls es diesen Eintrag nicht gibt.)
   //DOMPurify siehe https://github.com/cure53/DOMPurify
@@ -256,8 +236,12 @@ export function displayApp(apps) {
   let app = "";
   if (apps && apps.length > 0) {
     app = apps[0];
+  } else if (searchTermInput.val().length === 0) {
+    console.warn("Search with empty input");
+    displayError("Search with empty input");
+    return;
   } else {
-    console.error("API Error - Keine App Daten gefunden");
+    console.error("API Error - no App data found");
     displayError("API Error - no App data found");
     return;
   }
@@ -283,37 +267,35 @@ export function displayApp(apps) {
   //Daten in den DOM schreiben in das Objekt mit der ID result.
   resultField.removeClass("text-center text-muted");
   resultField.html(`
-      <div class="d-flex align-items-start mb-3">
-        <img src="${img}" class="rounded me-3 shadow-sm" width="120" height="120" onerror="this.style.display='none'">
-        <div class="flex-grow-1">
-          <h4>${name}</h4>
-          <p class="mb-1"><strong>App ID:</strong> ${id}</p>
-          <p class="mb-1"><strong>Bundle ID:</strong> ${bundle}</p>
-          <p class="mb-1"><strong>Version:</strong> ${version}</p>
-          <p class="mb-1"><strong>Category:</strong> ${genre}</p>
-          <p class="mb-1"><strong>Platform:</strong> ${platform}</p>
-          <p class="mb-1"><strong>Minimum OS version:</strong> ${minimumVersion}</p>
-          <p class="mb-1"><strong>Developer:</strong> ${developer}</p>
-          <p class="mb-1"><strong>Age rating:</strong> ${contentAdvisoryRating}</p>
-          <p class="mb-1"><strong>File size in MB:</strong> ${fileSize}</p>   
-<p class="mb-1">
-  <strong>Description:</strong>
-  <span class="short-text">${description.substring(0, 200)}</span>
-  <span class="full-text" style="display:none;">${description}</span>
-  ${
-    description.length > 200
-      ? '<button class="expand-btn btn btn-link p-0 ms-1">Expand</button>'
-      : ""
-  }
-</p>
-          <a href="${appStoreUrl}" class="btn btn-dark btn-sm mt-2 appstore-btn" target="_blank">Open in App Store
-  </a>
-          <button id="saveFavButton" class="btn btn-primary btn-sm mt-2 save-fav" data-bundle="${bundle}" data-name="${name}" data-art="${DOMPurify.sanitize(
+  <div class="d-flex align-items-start mb-3 resultDiv">
+    <img src="${img}" class="rounded me-3 shadow-sm appIcon" width="120" height="120" onerror="this.style.display='none'">
+    <div class="flex-grow-1">
+      <a href="${appStoreUrl}" target="_blank" class="text-decoration-none"><h4 class="mb-3 text-primary text-break">${name}</h4></a>
+      <p class="mb-1"><strong>App ID:</strong> ${id}</p>
+      <p class="mb-1"><strong>Bundle ID:</strong> ${bundle}</p>
+      <p class="mb-1"><strong>Version:</strong> ${version}</p>
+      <p class="mb-1"><strong>Category:</strong> ${genre}</p>
+      <p class="mb-1"><strong>Platform:</strong> ${platform}</p>
+      <p class="mb-1"><strong>Minimum OS version:</strong> ${minimumVersion}</p>
+      <p class="mb-1"><strong>Developer:</strong> ${developer}</p>
+      <p class="mb-1"><strong>Age rating:</strong> ${contentAdvisoryRating}</p>
+      <p class="mb-1"><strong>File size in MB:</strong> ${fileSize}</p>   
+      <p class="mb-1">
+        <strong>Description:</strong>
+        <span class="short-text">${description.substring(0, 200)}</span>
+        <span class="full-text" style="display:none;">${description}</span>
+        ${
+          description.length > 200
+            ? '<button class="expand-btn btn btn-link p-0 ms-1">Expand</button>'
+            : ""
+        }
+      </p>
+      <button id="saveFavButton" class="btn btn-primary btn-sm mt-2 save-fav" data-bundle="${bundle}" data-name="${name}" data-art="${DOMPurify.sanitize(
     app.artworkUrl60 || ""
   )}">Save to Favorites</button>
-        </div>
-      </div>
-    `);
+    </div>
+  </div>
+  `);
   //Event listener für den Favoriten-Button
   const saveFavButton = $("#saveFavButton");
   saveFavButton.on("click", function (e) {
@@ -349,100 +331,77 @@ export function populateFavorites(favoriteApps) {
 
     //Container für Listenelemente
     const item = $("<div>").addClass(
-      "list-group-item list-group-item-action d-flex align-items-center p-2"
+      "list-group-item list-group-item-action d-flex align-items-center p-3 gap-3 me-3 border image-text-wrapper"
     );
 
     //Icon
     const img = $("<img>")
       .attr("src", iconUrl)
-      .addClass("rounded me-3 border")
+      .addClass("rounded border flex-shrink-0")
       .attr("width", "40")
       .attr("height", "40")
       .css("object-fit", "cover");
 
     //Text-Bereich
-    const textDiv = $("<div>").addClass("flex-grow-1 overflow-hidden");
+    const contentDiv = $("<div>").addClass("flex-grow-1 overflow-hidden w-100");
+
+    //Titel + Icons
+    const titleRow = $("<div>").addClass(
+      "d-flex align-items-center gap-2 flex-wrap"
+    );
     const nameSpan = $("<div>").addClass("fw-bold text-truncate").text(name);
+
+    //Plattform Icons holen und ms-auto entfernen, damit sie links beim Titel kleben
+    const platIcons = createPlatformIconContainer(app)
+      .removeClass("ms-auto opacity-50")
+      .addClass("opacity-75");
+
+    titleRow.append(nameSpan).append(platIcons);
+
+    //ID text
     const bundleSpan = $("<small>")
       .addClass("text-muted d-block text-truncate")
-      .text(bundleId + ", " + id);
+      .text(`${bundleId}, ${id}`);
 
-    // Plattform Icons
-    const platIcons = createPlatformIconContainer(app)
-      .removeClass("ms-auto")
-      .addClass("mt-1");
+    contentDiv.append(titleRow).append(bundleSpan);
 
-    //Zusammenfügen
-    textDiv.append(nameSpan).append(bundleSpan);
+    //Buttons
+    const rightSection = $("<div>").addClass(
+      "favoritesRightSection d-flex align-items-center gap-2 ms-auto"
+    );
 
     //Löschen Button
     const deleteBtn = $("<button>")
-      .addClass("btn btn-sm btn-danger ms-3")
+      .addClass("btn btn-sm btn-danger deleteButton")
       .text("Delete")
       .data("trackId", app.trackId)
       .on("click", (e) => {
         e.preventDefault();
-        // 2. Hier lesen wir den Wert aus dem geklickten Element wieder aus
-        // e.currentTarget ist der Button selbst
         const idToDelete = $(e.currentTarget).data("trackId");
         localStorageHandler.removeFavorites(idToDelete);
-
-        //Custom Event auslösen, um die Favoriten neu zu laden.
         const event = new CustomEvent("reloadFavorites");
         document.dispatchEvent(event);
       });
 
     //Details Button
     const detailBtn = $("<button>")
-      .addClass("btn btn-sm btn-primary ms-3")
+      .addClass("btn btn-sm btn-primary detailsButton")
       .text("Details")
       .on("click", (e) => {
         e.preventDefault();
-        displayApp([app]); //App Details anzeigen
-        //Nach oben scrollen
+        displayApp([app]);
         document
           .getElementById("result")
           .scrollIntoView({ behavior: "smooth" });
       });
 
-    //Plattform-Icons
-    const rightSection = $("<div>").addClass(
-      "d-flex align-items-center ms-auto"
-    );
-    rightSection
-      .append(createPlatformIconContainer(app))
-      .append(deleteBtn)
-      .append(detailBtn);
+    rightSection.append(deleteBtn).append(detailBtn);
 
-    //Alles Zusammenfügen
-    item.append(img).append(textDiv).append(rightSection);
+    // Zusammenfügen
+    item.append(img).append(contentDiv).append(rightSection);
     favoritesList.append(item);
   });
 }
-/*
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /**
  * Zeigt eine Liste von CVEs (Sicherheitslücken) im DOM an.
@@ -454,7 +413,7 @@ export function displayCVEs(cveList) {
 
   if (!cveList || cveList.length === 0) {
     cveDomContainer.html(
-      '<div class="alert alert-info">Keine kritischen CVEs gefunden.</div>'
+      '<div class="text-muted text-center">No critical CVEs found. What a day!</div>'
     );
     return;
   }
@@ -493,28 +452,21 @@ export function displayCVEs(cveList) {
 
     //HTML Template bauen
     const html = `
-            <div class="list-group-item rounded me-3 border ${
-              severity === "CRITICAL"
-            } p-3">
-                <div class="d-flex flex-wrap justify-content-between align-items-start mb-2">
-                    <div class="me-2 mb-1">
-                        <h5 class="mb-0 text-primary text-break">
-                            <a href="https://nvd.nist.gov/vuln/detail/${id}" target="_blank" class="text-decoration-none">
-                                ${id}
-                            </a>
-                        </h5>
-                        <small class="text-muted text-break">Published: ${publishedDate} | Source: ${source}</small>
-                    </div>
-                    <div class="text-end ms-auto">
-                        <span class="badge bg-danger fs-6">${score} ${severity}</span>
-                        <div class="small text-muted mt-1 text-nowrap">${status}</div>
-                    </div>
-                </div>
-
-                <p class="mb-2 mt-2 text-break">${description}</p>
-            </div>
-        `;
-
+    <div class="list-group-item rounded me-3 border p-3">
+      <div class="d-flex flex-wrap justify-content-between align-items-start mb-2">      
+        <div class="order-1 order-md-2 ms-0 ms-md-auto text-start text-md-end">
+          <span class="badge bg-danger fs-6">${score} ${severity}</span>
+          <div class="small text-muted mt-1 text-nowrap">${status}</div>
+        </div>      
+        <div class="order-2 order-md-1 me-2 mb-1">
+          <h5 class="mb-0 text-primary text-break">
+            <a href="https://nvd.nist.gov/vuln/detail/${id}" target="_blank" class="text-decoration-none">${id}</a>
+          </h5>
+          <small class="text-muted text-break">Published: ${publishedDate} | Source: ${source}</small>
+        </div>
+      </div>       
+      <p class="mb-2 mt-2 text-break">${description}</p>
+    </div>`;
     //In den DOM schreiben
     cveDomContainer.append(html);
   });

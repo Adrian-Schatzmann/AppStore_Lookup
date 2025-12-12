@@ -45,16 +45,16 @@ export function filterDeveloper(apps) {
   let filteredApps = [];
   //Funktion überspringen wenn kein Entwickler angegeben wurde. Weigergeben an nächsten Filterschritt
   if (!selectedDeveloper) {
-    console.log("Keine Entwicklersuche"); //debug
+    console.log("No developers filter"); //debug
     return apps;
   }
 
   for (const app of apps) {
-    if (app.sellerName === selectedDeveloper) {
+    if (app.sellerName.includes(selectedDeveloper)) {
       filteredApps.push(app);
     }
   }
-  console.log("Nach Entwickler gefilterte Apps: " + filteredApps.length); //Debug
+  console.log("Apps filtered by developer: ", filteredApps); //Debug
   return filteredApps;
 }
 
@@ -76,7 +76,7 @@ export function filterPlatform(apps) {
 
   //Keine Filterung bei entsprechender Eingabe. Die restliche Funktion wird übersprungen.
   if (selectedPlatforms.length === 0 || selectedPlatforms.length === 4) {
-    console.log("Keine Platformsuche");
+    console.log("No platform search");
     return apps;
   }
 
@@ -92,7 +92,7 @@ export function filterPlatform(apps) {
     }
   }
 
-  console.log("Nach Platform gefilterte Apps: " + filteredApps.length); //debug
+  console.log("Apps filtered by platform: ", filteredApps); //debug
   return filteredApps;
 }
 

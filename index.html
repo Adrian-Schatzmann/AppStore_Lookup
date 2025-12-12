@@ -25,14 +25,6 @@
       <!-- Search Card -->
       <div class="card p-4 shadow-sm mb-4">
         <form>
-          <!-- Search Type -->
-          <div class="mb-3">
-            <label for="searchMode" class="form-label">Search Mode</label>
-            <select id="searchMode" class="form-select">
-              <option value="name">App Name</option>
-              <option value="id">App Store ID</option>
-            </select>
-          </div>
 
           <!-- Platform Multi-Select -->
           <div class="mb-3">
@@ -101,7 +93,7 @@
               id="developerInput"
               class="form-control"
               autocomplete="off"
-              placeholder="Type developer name"
+              placeholder="Apple"
               data-bs-toggle="dropdown"
             />
             <div id="developerSuggestions" class="dropdown-menu w-100"></div>
@@ -110,13 +102,13 @@
 
           <!-- Search Input with Dropdown -->
           <div class="mb-3 dropdown">
-            <label for="searchTermInput" class="form-label">Search Term</label>
+            <label for="searchTermInput" class="form-label">Search Term (App name or AppStore ID)</label>
             <input
               type="text"
               id="searchTermInput"
               class="form-control"
               autocomplete="off"
-              placeholder="Enter App Name or ID"
+              placeholder="Pages / 361309726"
               data-bs-toggle="dropdown"
             />
             <div id="softwareSuggestions" class="dropdown-menu w-100"></div>

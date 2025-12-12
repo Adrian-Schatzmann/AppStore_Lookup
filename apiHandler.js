@@ -84,8 +84,6 @@ export function nistNVDApi() {
     const pubEndDate = date.toISOString();
     date.setDate(date.getDate() - 1); //120 Tage wäre ist das Maximum, dass die API erlaubt.
     const pubStartDate = date.toISOString();
-    console.log(pubStartDate);
-    console.log(pubEndDate);
 
     //Weitere Parameter
     const severity = "CRITICAL";

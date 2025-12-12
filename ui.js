@@ -11,7 +11,6 @@ import * as localStorageHandler from "./localStorageHandler.js";
 const platformCheckboxes = $(".platform-dropdown .form-check-input");
 const platformButton = $("#platformSelectButton");
 const keepOpenMenus = $(".dropdown-menu.keep-open");
-const searchMode = $("#searchMode");
 const developerInput = $("#developerInput");
 const favoritesList = $("#favoritesList");
 const resultField = $("#result");
@@ -126,26 +125,6 @@ $(document).on("click", ".expand-btn", function () {
 //------------------------
 //Hauptfunktionen
 //------------------------
-//Event-Listener für das "Search Mode"-Dropdown
-searchMode.on("change", function () {
-  if (this.value === "id") {
-    //Dieser Block wird ausgeführt, wenn "App Store ID" ausgewählt wird.
-    //Inputs zurücksetzen und deaktivieren
-    platformButton.prop("disabled", true);
-    developerInput.val("");
-    //    platformCheckboxes.forEach(function (checkbox) {
-    //     checkbox.checked = keepOpenMenus.checked;
-    //    });
-    updatePlatformButtonText();
-    developerInput.prop("disabled", true);
-  } else {
-    // Dieser Block wird ausgeführt, wenn "App Name" ausgewählt wird.
-    //Inputs aktivieren
-    platformButton.prop("disabled", false);
-    developerInput.prop("disabled", false);
-  }
-});
-
 /**
  * Universelle Funktion für Dropdown-Vorschläge.
  * Erkennt automatisch, ob es sich um einfache Strings (Entwickler)
@@ -247,7 +226,7 @@ export function populateSuggestions(
  * @returns null bei Error
  */
 export function displayApp(apps) {
-  console.log(apps);
+  console.log("App to display: ", apps);
   resultField.empty();
   //Benötigte Infos aus App Objekt extrahieren (DOMPurify entfernt schädlichen code, || "" ist ein fallback falls es diesen Eintrag nicht gibt.)
   //DOMPurify siehe https://github.com/cure53/DOMPurify
@@ -257,7 +236,7 @@ export function displayApp(apps) {
   if (apps && apps.length > 0) {
     app = apps[0];
   } else {
-    console.error("API Error - Keine App Daten gefunden");
+    console.error("API Error - no App data found");
     displayError("API Error - no App data found");
     return;
   }
@@ -412,30 +391,6 @@ export function populateFavorites(favoriteApps) {
     favoritesList.append(item);
   });
 }
-/*
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /**
  * Zeigt eine Liste von CVEs (Sicherheitslücken) im DOM an.

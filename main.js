@@ -39,8 +39,8 @@ async function combineResults(searchPromises) {
     return combinedResults;
   } catch (error) {
     //Error handling wenn mindestens eine der Anfragen fehlschlägt
-    console.error("Fehler bei der kombinierten Suche: ", error);
-    ui.displayError("Fehler bei der kombinierten Suche");
+    console.error("Error when combining search results: ", error);
+    ui.displayError("Error when combining search results");
     return []; //Leeres Array zurückgeben, damit die UI nicht crasht
   }
 }
@@ -77,6 +77,20 @@ async function initializeCVE() {
   ui.displayCVEs(cve.vulnerabilities);
 }
 
+/**
+ * Bestimmt, ob nach einer App ID oder einem App Namen gesucht werden soll.
+ * Wird als ID klassifiziert, wenn nur Zahlen (min. 5) vorkommen.
+ * @param {*} input Zu prüfende Eingabe
+ * @returns String "id" oder "name"
+ */
+function determineSearchMode(input) {
+  if (/^\d+$/.test(input) && input.length >= 5) {
+    return "id";
+  } else {
+    return "name";
+  }
+}
+
 //------------------------
 //Hauptfunktionen
 //------------------------
@@ -94,11 +108,14 @@ searchButton.on("click", async function (e) {
   const apps = await getProcessedApps(input);
   //Steuerung für weiteren Ablauf.
   const appliedDevFilter = filter.filterDeveloper(apps); //Entwicklerfilter anwenden
-  const appliedPlatformFilter = filter.filterPlatform(appliedDevFilter); //Platformfilter anwenden
-  const sortedByRelevance = filter.sortAppsByRelevance(
-    appliedPlatformFilter,
-    input
-  );
+  let appliedPlatformFilter = filter.filterPlatform(appliedDevFilter); //Platformfilter anwenden
+  if (determineSearchMode(searchTermInput.val()) === "name") {
+    //Nach Relevanz sortieren falls der Input ein Name ist
+    appliedPlatformFilter = filter.sortAppsByRelevance(
+      appliedPlatformFilter,
+      input
+    );
+  }
   ui.displayApp(appliedPlatformFilter);
 });
 
@@ -108,7 +125,7 @@ searchButton.on("click", async function (e) {
  * @returns Array mit den Apps aus der iTunes api.
  */
 async function getProcessedApps(input) {
-  const selectedSearchMode = $("#searchMode").val(); //Aktuell gewählten Modus holen
+  const selectedSearchMode = determineSearchMode(input); //Suchmodus bestimmen
   const searchPromises = []; //Dynamische Promises-Liste
 
   //---------Suche nach String---------
@@ -128,7 +145,7 @@ async function getProcessedApps(input) {
       selectedPlatforms.length === 0 ||
       selectedPlatforms.length === 4
     ) {
-      console.log("macOS Ajax Abfrage startet"); //debug
+      console.log("macOS Ajax query starts"); //debug
       try {
         //Ajax Abfrage spezifisch für macOS starten und in searchPromises speichern. Await kommt später.
         searchPromises.push(
@@ -137,11 +154,11 @@ async function getProcessedApps(input) {
       } catch (error) {
         //Error handling
         console.error(
-          "Fehler bei der macOS-spezifischen iTunes API-Ajax Abfrage:",
+          "Error with macOS-specific iTunes API Ajax query:",
           error.message
         );
         ui.displayError(
-          "Fehler bei der macOS-spezifischen iTunes API-Ajax Abfrage"
+          "Error with macOS-specific iTunes API Ajax query"
         );
       }
     }
@@ -154,15 +171,15 @@ async function getProcessedApps(input) {
       selectedPlatforms.length === 0 ||
       selectedPlatforms.length === 4
     ) {
-      console.log("mobile Ajax Abfrage startet"); //debug
+      console.log("mobile Ajax query starts"); //debug
       try {
         //Ajax Abfrage, in searchPromises speichern. Await kommt später.
         searchPromises.push(
           apiHandler.iTunesSearchAPI(input, "mobile", "", 10)
         );
       } catch (error) {
-        console.error("Fehler bei der iTunes API-Ajax Abfrage:", error.message); //Error handling
-        ui.displayError("Fehler bei der iTunes API-Ajax Abfrage");
+        console.error("Error with non-macOS-specific iTunes API Ajax query:", error.message); //Error handling
+        ui.displayError("Error with non-macOS-specific iTunes API Ajax query");
       }
     }
     return combineResults(searchPromises);
@@ -174,13 +191,13 @@ async function getProcessedApps(input) {
       const apps = apiResponse.results; //Umwandlung zu normalem Array für einfachere Handhabung
       return apps;
     } catch (error) {
-      console.error("Fehler bei der iTunes API-Ajax Abfrage:", error.message); //Error handling
-      ui.displayError("Fehler bei der iTunes API-Ajax Abfrage");
+      console.error("Error in iTunes API Ajax query for App ID:", error.message); //Error handling
+      ui.displayError("Error in iTunes API Ajax query for App ID");
     }
   } else {
     //Error bei der Auswahl vom Suchmodus
-    console.error("Unbekannte Suchmodus Auswahl");
-    ui.displayError("Unbekannte Suchmodus Auswahl");
+    console.error("Search Mode Error");
+    ui.displayError("Search Mode Error");
   }
 }
 
@@ -191,8 +208,7 @@ developerInput.on(
   "input",
   debounce(async function () {
     const searchPromises = []; //Dynamische Promises-Liste
-    console.log(developerInput.val());
-    console.log("Entwicklerabfrage startet"); //debug
+    console.log("Developer query starts: ", developerInput.val()); //debug
     try {
       //Ajax Abfrage
       searchPromises.push(
@@ -228,8 +244,8 @@ developerInput.on(
       );
     } catch (error) {
       //Error handling
-      console.error("Fehler bei der kombinierten Entwicklersuche: ", error);
-      ui.displayError("Fehler bei der kombinierten Entwicklersuche");
+      console.error("Error while searching for developers : ", error);
+      ui.displayError("Error while searching for developers");
       return []; //Leeres Array zurückgeben, damit die UI nicht crasht
     }
   }, 200)
@@ -242,7 +258,7 @@ searchTermInput.on(
   "input",
   debounce(async function () {
     //Überspringen, wenn Suchmodus ID ist.
-    if ($("#searchMode").val() === "id") {
+    if (determineSearchMode(searchTermInput.val()) === "id") {
       return;
     }
 
@@ -258,7 +274,7 @@ searchTermInput.on(
         appliedPlatformFilter,
         searchTermInput.val()
       ); //Ergebnisse nach Relevanz sortieren
-      console.log("Fertig gefilterte und sortierte Apps: ", sortedByRelevance);
+      console.log("Filtered and sorted apps: ", sortedByRelevance);
       //Resultate dem User anzeigen
       if (sortedByRelevance && sortedByRelevance.length > 0) {
         ui.populateSuggestions(
@@ -267,16 +283,16 @@ searchTermInput.on(
           searchTermInput
         );
       } else if (searchTermInput.val() != "") {
-        console.error("Keine App Daten gefunden");
-        ui.displayError("No App data found");
+        console.error("No data found");
+        ui.displayError("No data found");
         return;
       } else {
-        console.warn("API Abfrage bei leerem Input");
+        console.warn("API query with empty input");
       }
     } catch (error) {
       //Error handling
-      console.error("Fehler bei der Softwaresuche: ", error);
-      ui.displayError("Fehler bei der Softwaresuche");
+      console.error("Error during software search: ", error);
+      ui.displayError("Error during software search");
       return []; //Leeres Array zurückgeben, damit die UI nicht crasht
     }
   }, 200)
@@ -293,8 +309,8 @@ async function loadFavorites() {
       searchPromises.push(apiHandler.iTunesLookupAPI(id)); //ajax Abfragen für alle Favoriten starten
     } catch (error) {
       //Error handling
-      console.error("Fehler beim Laden der Favoriten: ", error.message);
-      ui.displayError("Fehler beim Laden der Favoriten.");
+      console.error("Error loading favorites: ", error.message);
+      ui.displayError("Error loading favorites.");
     }
     //Auf alle Antworten warten und ein "normales" Array erstellen.
   });

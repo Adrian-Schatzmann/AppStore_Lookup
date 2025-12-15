@@ -1,3 +1,45 @@
+# 🍏 AppStore Search & CVE Lookup Tool
+
+A modern web tool that combines the **Apple iTunes Search & Lookup API** and the **NIST NVD API** to provide detailed information about apps and current security vulnerabilities (CVEs).
+
+**[👉 Try it here](https://adrian-schatzmann.github.io/AppStore_Lookup/)**
+
+## ✨ Features
+
+### 1. App Store Search
+
+* **iOS & macOS:** Finds apps across platforms through parallel queries.
+* **Smart Filters:** Filter by developer or specific platforms (macOS, iOS, watchOS, etc.).
+* **Details:** Displays bundle ID, app ID, version, category, and more.
+* **Favorites:** Stores important apps locally in the browser (`localStorage`).
+
+### 2. Security Dashboard (CVE)
+
+* **Real-time Data:** Displays the latest **critical security vulnerabilities** (CRITICAL severity) from the last 24 hours.
+* **Responsive:** Optimized display for mobile and desktop.
+
+## 🔌 APIs Used
+
+| API                         | Purpose           | Special Feature                                                                       |
+| --------------------------- | ----------------- | ------------------------------------------------------------------------------------- |
+| **Apple iTunes Search API** | Search app data   | Uses `jsonp` to bypass CORS and the `entity` parameter for separate Mac/iOS searches. |
+| **Apple iTunes Lookup API** | Load app details  | Retrieves specific metadata based on the app ID.                                      |
+| **NIST NVD API 2.0**        | Retrieve CVE data | Filters by `cvssV31Severity=CRITICAL` and time window.                                |
+
+## 🛠️ Technologies & Dependencies
+
+* **Frontend:** HTML5, CSS3, JavaScript
+* **Framework:** [Bootstrap 5.3](https://getbootstrap.com/) (Styling & responsive layout)
+* **Library:** [jQuery 3.7.1](https://jquery.com/) (DOM manipulation & AJAX)
+* **Security:** [DOMPurify](https://github.com/cure53/DOMPurify) (XSS protection when rendering HTML)
+* **Icons:** Inline SVGs (No external icon fonts required)
+
+## 🚀 Installation
+
+No build tools required. The project runs directly in the browser.
+##----------------------------------------------------------------------------------------
+
+
 #🍏 AppStore Search & CVE Lookup ToolEin modernes Web-Tool, das die **Apple iTunes Search & Lookup API** und die **NIST NVD API** kombiniert, um detaillierte Informationen zu Apps und aktuellen Sicherheitslücken (CVEs) zu liefern.
 
 **[👉 Hier ausprobieren](https://adrian-schatzmann.github.io/AppStore_Lookup/)**

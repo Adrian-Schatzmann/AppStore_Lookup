@@ -37,7 +37,7 @@ A modern web tool that combines the **Apple iTunes Search & Lookup API** and the
 ## 🚀 Installation
 
 No build tools required. The project runs directly in the browser.
-_______________________________________________________________________________
+## _______________________________________________________________________________
 
 
 #🍏 AppStore Search & CVE Lookup ToolEin modernes Web-Tool, das die **Apple iTunes Search & Lookup API** und die **NIST NVD API** kombiniert, um detaillierte Informationen zu Apps und aktuellen Sicherheitslücken (CVEs) zu liefern.

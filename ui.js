@@ -200,6 +200,7 @@ export function populateSuggestions(
     // --- GEMEINSAMER KLICK-HANDLER ---
     itemButton.on("click", (e) => {
       e.preventDefault();
+      resetErrorMessage(); //Vorherige Fehlermeldungen zurücksetzen
       //Wert ins Inputfeld schreiben
       targetInput.val(valueToInsert);
 

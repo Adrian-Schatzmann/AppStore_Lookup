@@ -157,9 +157,7 @@ async function getProcessedApps(input) {
           "Error with macOS-specific iTunes API Ajax query:",
           error.message
         );
-        ui.displayError(
-          "Error with macOS-specific iTunes API Ajax query"
-        );
+        ui.displayError("Error with macOS-specific iTunes API Ajax query");
       }
     }
 
@@ -178,7 +176,10 @@ async function getProcessedApps(input) {
           apiHandler.iTunesSearchAPI(input, "mobile", "", 10)
         );
       } catch (error) {
-        console.error("Error with non-macOS-specific iTunes API Ajax query:", error.message); //Error handling
+        console.error(
+          "Error with non-macOS-specific iTunes API Ajax query:",
+          error.message
+        ); //Error handling
         ui.displayError("Error with non-macOS-specific iTunes API Ajax query");
       }
     }
@@ -191,7 +192,10 @@ async function getProcessedApps(input) {
       const apps = apiResponse.results; //Umwandlung zu normalem Array für einfachere Handhabung
       return apps;
     } catch (error) {
-      console.error("Error in iTunes API Ajax query for App ID:", error.message); //Error handling
+      console.error(
+        "Error in iTunes API Ajax query for App ID:",
+        error.message
+      ); //Error handling
       ui.displayError("Error in iTunes API Ajax query for App ID");
     }
   } else {
@@ -252,6 +256,18 @@ developerInput.on(
 );
 
 /**
+ * setzt die Vorschläge zurück und startet neue Abfragen, für den Fall dass nach einer Eingabe ein filter geändert wird
+ */
+searchTermInput.on("click", function () {
+  ui.populateSuggestions(
+    softwareSuggestions,
+    [],
+    searchTermInput
+  );
+  searchTermInput.trigger("input");
+});
+
+/**
  * Event Listener für das App-Namen-Eingabefeld
  */
 searchTermInput.on(
@@ -295,7 +311,7 @@ searchTermInput.on(
       ui.displayError("Error during software search");
       return []; //Leeres Array zurückgeben, damit die UI nicht crasht
     }
-  }, 200)
+  }, 250)
 );
 
 async function loadFavorites() {

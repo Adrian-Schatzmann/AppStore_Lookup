@@ -6,7 +6,7 @@ export function iTunesLookupAPI(appID) {
   return new Promise((resolve, reject) => {
     //Rückgabe der Daten oder eines Fehlers vorbereiten
     const url = "https://itunes.apple.com/lookup"; //API URL
-    const country = "CH"; //Schweizer AppStore        //funktioniert noch nicht! das hier geht: https://itunes.apple.com/lookup?id=1542025935&country=CH
+    const country = "CH"; //Schweizer AppStore
 
     $.ajax({
       //Startet per jQuery eine neue Ajax Abfrage
@@ -79,7 +79,7 @@ export function nistNVDApi() {
   return new Promise((resolve, reject) => {
     const url = "https://services.nvd.nist.gov/rest/json/cves/2.0";
 
-    //Datum berechnen (heute und vor 119 Tagen in ISO-8601)
+    //Datum berechnen (heute und vor 24 Stunen in ISO-8601)
     const date = new Date();
     const pubEndDate = date.toISOString();
     date.setDate(date.getDate() - 1); //120 Tage wäre ist das Maximum, dass die API erlaubt.
@@ -97,8 +97,6 @@ export function nistNVDApi() {
         cvssV3Severity: severity,
         pubStartDate: pubStartDate,
         pubEndDate: pubEndDate,
-        //resultsPerPage: limit,
-        //keywordSearch: "NutzlosesKeywordDasHoffentlichInKeinemCVEvorkommt...(-_-)",
       },
       success: function (data) {
         resolve(data);

@@ -40,28 +40,28 @@ No build tools required. The project runs directly in the browser.
 
 
 
-#🍏 AppStore Search & CVE Lookup ToolEin modernes Web-Tool, das die **Apple iTunes Search & Lookup API** und die **NIST NVD API** kombiniert, um detaillierte Informationen zu Apps und aktuellen Sicherheitslücken (CVEs) zu liefern.
+# 🍏 AppStore Search & CVE Lookup ToolEin modernes Web-Tool, das die **Apple iTunes Search & Lookup API** und die **NIST NVD API** kombiniert, um detaillierte Informationen zu Apps und aktuellen Sicherheitslücken (CVEs) zu liefern.
 
 **[👉 Hier ausprobieren](https://adrian-schatzmann.github.io/AppStore_Lookup/)**
 
-##✨ Features###1. App Store Suche* **iOS & macOS:** Findet Apps plattformübergreifend durch parallele Abfragen.
+## ✨ Features###1. App Store Suche* **iOS & macOS:** Findet Apps plattformübergreifend durch parallele Abfragen.
 * **Smarte Filter:** Filtern nach Entwickler oder spezifischen Plattformen (macOS, iOS, watchOS, etc.).
 * **Details:** Zeigt Bundle-ID, App-ID, Version, Kategorie und mehr.
 * **Favoriten:** Speichert wichtige Apps lokal im Browser (`localStorage`).
 
-###2. Security Dashboard (CVE)* **Echtzeit-Daten:** Zeigt die neuesten **kritischen Sicherheitslücken** (CRITICAL Severity) der letzten 24 Stunden.
+### 2. Security Dashboard (CVE)* **Echtzeit-Daten:** Zeigt die neuesten **kritischen Sicherheitslücken** (CRITICAL Severity) der letzten 24 Stunden.
 * **Responsive:** Optimierte Darstellung für Mobile und Desktop.
 
-##🔌 Verwendete APIs| API | Zweck | Besonderheit |
+## 🔌 Verwendete APIs| API | Zweck | Besonderheit |
 | --- | --- | --- |
 | **Apple iTunes Search API** | App-Daten suchen | Nutzt `jsonp` zur Umgehung von CORS und `entity`-Parameter für getrennte Mac/iOS-Suchen. |
 | **Apple iTunes Lookup API** | App-Details laden | Ruft spezifische Metadaten basierend auf der App-ID ab. |
 | **NIST NVD API 2.0** | CVE-Daten abrufen | Filtert nach `cvssV31Severity=CRITICAL` und Zeitfenster. |
 
-##🛠️ Technologien & Dependencies* **Frontend:** HTML5, CSS3, JavaScript
+## 🛠️ Technologien & Dependencies* **Frontend:** HTML5, CSS3, JavaScript
 * **Framework:** [Bootstrap 5.3](https://getbootstrap.com/) (Styling & Responsive Layout)
 * **Library:** [jQuery 3.7.1](https://jquery.com/) (DOM-Manipulation & AJAX)
 * **Security:** [DOMPurify](https://github.com/cure53/DOMPurify) (XSS-Schutz beim Rendern von HTML)
 * **Icons:** Inline SVGs (Keine externen Icon-Fonts nötig)
 
-##🚀 InstallationKeine Build-Tools erforderlich. Das Projekt läuft direkt im Browser.
+## 🚀 InstallationKeine Build-Tools erforderlich. Das Projekt läuft direkt im Browser.

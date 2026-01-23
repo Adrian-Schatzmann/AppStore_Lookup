@@ -335,4 +335,4 @@ async function loadFavorites() {
 
 //Teile der UI, die API Abfragen brauchen, initialisieren. Werden am Ende ausgeführt, damit andere Funktionen schon verfügbar sind.
 loadFavorites();
-await initializeCVE();
+void initializeCVE();

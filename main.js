@@ -94,9 +94,8 @@ function determineSearchMode(input) {
 //------------------------
 //Hauptfunktionen
 //------------------------
-loadFavorites();
-ui.initializeUI();
-await initializeCVE();
+
+ui.initializeUI(); //UI initialisieren
 
 /**
  * Event Listener für den Such-Button. Startet die App Abfrage und Ergebnisfilter. Wird aller Wahrscheinlichkeit nur im ID-Modus verwendet.
@@ -333,3 +332,7 @@ async function loadFavorites() {
   favoriteApps = await combineResults(searchPromises);
   ui.populateFavorites(favoriteApps);
 }
+
+//Teile der UI, die API Abfragen brauchen, initialisieren. Werden am Ende ausgeführt, damit andere Funktionen schon verfügbar sind.
+loadFavorites();
+void initializeCVE();

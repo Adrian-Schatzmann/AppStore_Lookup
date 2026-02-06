@@ -3,8 +3,6 @@
 }
 
 @media only screen and (max-width: 500px) {
-
-
   .list-group-item.d-flex {
     flex-direction: column !important;
     align-items: flex-start !important;
@@ -15,6 +13,17 @@
     flex-direction: row;
     gap: 0.5rem;
   }
+  .title-container {
+    flex-direction: column; /* Stapelt H1 und Version */
+    align-items: flex-start; /* Links ausrichten */
+  }
+  .title-container h1 {
+    margin-bottom: 0px !important;
+  }
+  .title-container .version {
+    margin-left: 0px; /* Entfernt horizontalen Abstand */
+    margin-top: 0.25rem; /* kleinen Abstand unter H1 */
+  }
 }
 
 @media only screen and (max-width: 600px) {
@@ -24,12 +33,11 @@
   .resultDiv {
     display: block !important;
   }
-
 }
 
-  .appIcon {
-    float: right;
-  }
-    .resultDiv {
-    display: block !important;
-  }
+.appIcon {
+  float: right;
+}
+.resultDiv {
+  display: block !important;
+}

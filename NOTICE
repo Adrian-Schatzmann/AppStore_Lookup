@@ -2,17 +2,17 @@ THIRD-PARTY DEPENDENCIES NOTICE
 
 This project includes the following third-party libraries, each governed by its own license:
 
-1. jQuery
+1. jQuery v.4.0.0
    License: MIT
    Source: https://jquery.com/
    Copyright notice must be preserved if redistributed.
 
-2. DOMPurify
+2. DOMPurify v 3.3.0
    License: Apache License 2.0 (Dual-licensed MPL 2.0)
    Source: https://github.com/cure53/DOMPurify
    This project elects to use DOMPurify under the terms of the Apache 2.0 License.
 
-3. Bootstrap
+3. Bootstrap v 5.3.8
    License: MIT
    Source: https://getbootstrap.com/
    Copyright notice must be preserved if redistributed.
@@ -28,8 +28,3 @@ This software does not grant any rights to the data retrieved.
 
 For more information, see: 
 https://performance-partners.apple.com/search-api
-
--------------------------------------------------------------------------
-
-All original code written in this repository is licensed under the MIT License above 
-unless otherwise specified in the third-party licenses.

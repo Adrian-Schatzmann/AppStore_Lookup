@@ -24,19 +24,22 @@ const softwareSuggestions = $("#softwareSuggestions");
  * @returns Kombiniertes Array
  */
 async function combineResults(searchPromises) {
-  //beide cases zusammenführen
-  //Auf alle (1 oder 2) Ergebnisse warten. Promise.all wartet auf alle Promises im Array, egal wie viele es sind.
-  let combinedResults = [];
-
   try {
+    //beide cases zusammenführen
+    //Auf alle (1 oder 2) Ergebnisse warten. Promise.all wartet auf alle Promises im Array, egal wie viele es sind.
     const allResponses = await Promise.all(searchPromises);
 
+    //Map erstellen um Duplikate zu entfernen
+    const appMap = new Map();
     //Iterieren über alle erhaltenen Responses
     for (const response of allResponses) {
-      //Kombinieren mit Umwandlung zu normalem Array für einfachere Handhabung
-      combinedResults.push(...(response.results || []));
+      for (const app of response.results || []) {
+        appMap.set(app.trackId, app); // überschreibt Duplikate automatisch
+      }
     }
-    return combinedResults;
+
+    //Array mit eindeutigen Apps zurückgeben
+    return [...appMap.values()];
   } catch (error) {
     //Error handling wenn mindestens eine der Anfragen fehlschlägt
     console.error("Error when combining search results: ", error);
@@ -72,7 +75,7 @@ $(document).on("reloadFavorites", function () {
 async function initializeCVE() {
   const cve = await apiHandler.nistNVDApi();
   cve.vulnerabilities.sort(
-    (a, b) => new Date(b.cve.published) - new Date(a.cve.published)
+    (a, b) => new Date(b.cve.published) - new Date(a.cve.published),
   ); //Nach Datum sortieren
   ui.displayCVEs(cve.vulnerabilities);
 }
@@ -112,7 +115,7 @@ searchButton.on("click", async function (e) {
     //Nach Relevanz sortieren falls der Input ein Name ist
     appliedPlatformFilter = filter.sortAppsByRelevance(
       appliedPlatformFilter,
-      input
+      input,
     );
   }
   ui.displayApp(appliedPlatformFilter);
@@ -131,7 +134,7 @@ async function getProcessedApps(input) {
   if (selectedSearchMode === "name") {
     //Benutzerauswahl für Platform holen und in ein Array umwandeln
     const selectedPlatforms = $(
-      ".platform-dropdown input[type='checkbox']:checked"
+      ".platform-dropdown input[type='checkbox']:checked",
     )
       .map(function () {
         return $(this).val();
@@ -148,13 +151,13 @@ async function getProcessedApps(input) {
       try {
         //Ajax Abfrage spezifisch für macOS starten und in searchPromises speichern. Await kommt später.
         searchPromises.push(
-          apiHandler.iTunesSearchAPI(input, "desktop", "", 10)
+          apiHandler.iTunesSearchAPI(input, "desktop", "", 10),
         );
       } catch (error) {
         //Error handling
         console.error(
           "Error with macOS-specific iTunes API Ajax query:",
-          error.message
+          error.message,
         );
         ui.displayError("Error with macOS-specific iTunes API Ajax query");
       }
@@ -172,12 +175,12 @@ async function getProcessedApps(input) {
       try {
         //Ajax Abfrage, in searchPromises speichern. Await kommt später.
         searchPromises.push(
-          apiHandler.iTunesSearchAPI(input, "mobile", "", 10)
+          apiHandler.iTunesSearchAPI(input, "mobile", "", 10),
         );
       } catch (error) {
         console.error(
           "Error with non-macOS-specific iTunes API Ajax query:",
-          error.message
+          error.message,
         ); //Error handling
         ui.displayError("Error with non-macOS-specific iTunes API Ajax query");
       }
@@ -193,7 +196,7 @@ async function getProcessedApps(input) {
     } catch (error) {
       console.error(
         "Error in iTunes API Ajax query for App ID:",
-        error.message
+        error.message,
       ); //Error handling
       ui.displayError("Error in iTunes API Ajax query for App ID");
     }
@@ -219,16 +222,16 @@ developerInput.on(
           developerInput.val(),
           "desktop",
           "softwareDeveloper",
-          10
-        )
+          10,
+        ),
       );
       searchPromises.push(
         apiHandler.iTunesSearchAPI(
           developerInput.val(),
           "mobile",
           "softwareDeveloper",
-          10
-        )
+          10,
+        ),
       );
       //Beide cases zusammenführen
       const combinedResults = await combineResults(searchPromises);
@@ -237,13 +240,13 @@ developerInput.on(
         ...new Set(
           combinedResults
             .map((app) => app.artistName) // 1. Nur den Entwicklernamen extrahieren
-            .filter((name) => name) // 2. Leere oder undefined Werte entfernen
+            .filter((name) => name), // 2. Leere oder undefined Werte entfernen
         ),
       ];
       ui.populateSuggestions(
         developerSuggestions,
         uniqueDeveloperNames,
-        developerInput
+        developerInput,
       );
     } catch (error) {
       //Error handling
@@ -251,18 +254,14 @@ developerInput.on(
       ui.displayError("Error while searching for developers");
       return []; //Leeres Array zurückgeben, damit die UI nicht crasht
     }
-  }, 200)
+  }, 200),
 );
 
 /**
  * setzt die Vorschläge zurück und startet neue Abfragen, für den Fall dass nach einer Eingabe ein filter geändert wird
  */
 searchTermInput.on("click", function () {
-  ui.populateSuggestions(
-    softwareSuggestions,
-    [],
-    searchTermInput
-  );
+  ui.populateSuggestions(softwareSuggestions, [], searchTermInput);
   searchTermInput.trigger("input");
 });
 
@@ -287,7 +286,7 @@ searchTermInput.on(
       const appliedPlatformFilter = filter.filterPlatform(appliedDevFilter); //Platformfilter anwenden
       const sortedByRelevance = filter.sortAppsByRelevance(
         appliedPlatformFilter,
-        searchTermInput.val()
+        searchTermInput.val(),
       ); //Ergebnisse nach Relevanz sortieren
       console.log("Filtered and sorted apps: ", sortedByRelevance);
       //Resultate dem User anzeigen
@@ -295,7 +294,7 @@ searchTermInput.on(
         ui.populateSuggestions(
           softwareSuggestions,
           sortedByRelevance,
-          searchTermInput
+          searchTermInput,
         );
       } else if (searchTermInput.val() != "") {
         console.error("No data found");
@@ -310,7 +309,7 @@ searchTermInput.on(
       ui.displayError("Error during software search");
       return []; //Leeres Array zurückgeben, damit die UI nicht crasht
     }
-  }, 250)
+  }, 250),
 );
 
 async function loadFavorites() {
